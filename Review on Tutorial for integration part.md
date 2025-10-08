@@ -7,7 +7,7 @@ This review covers the tutorials on integrating distributed computing in MLOps. 
 - [Move to part 5](#part-5)
 - [Part 6](#part-6) coming soon!
 
-# Part 1
+# Part 1 (estimated time: 4h)
 
 [Link to part 1](https://github.com/K123AsJ0k1/multi-cloud-hpc-oss-mlops-platform/blob/studying/tutorials/integration/studying/tutorial_for_integration_part_1.ipynb)
 
@@ -29,7 +29,7 @@ Huang:
 - If abbreviations are used, would be nice to be included in the defining part
 - If there is time, screenshots or guidevideos usually help visually, especially to complete newbies
 
-# Part 2
+# Part 2 (estimated time: )
 
 [Link to part 2](https://github.com/K123AsJ0k1/multi-cloud-hpc-oss-mlops-platform/blob/studying/tutorials/integration/studying/tutorial_for_integration_part_2.ipynb)
 
@@ -39,7 +39,7 @@ Huang:
 
 ## Suggested improvements
 
-# Part 3
+# Part 3 (estimated time: )
 
 [Link to part 3](https://github.com/K123AsJ0k1/multi-cloud-hpc-oss-mlops-platform/blob/studying/tutorials/integration/studying/tutorial_for_integration_part_3.ipynb)
 
@@ -49,7 +49,7 @@ Huang:
 
 ## Suggested improvements
 
-# Part 4
+# Part 4 (estimated time: )
 
 [Link to part 4](https://github.com/K123AsJ0k1/multi-cloud-hpc-oss-mlops-platform/blob/studying/tutorials/integration/studying/tutorial_for_integration_part_4.ipynb)
 
@@ -59,7 +59,7 @@ Huang:
 
 ## Suggested improvements
 
-# Part 5
+# Part 5 (estimated time: )
 
 [Link to part 5](https://github.com/K123AsJ0k1/multi-cloud-hpc-oss-mlops-platform/blob/studying/tutorials/integration/studying/tutorial_for_integration_part_5.ipynb)
 
@@ -69,7 +69,7 @@ Huang:
 
 ## Suggested improvements
 
-# Part 6
+# Part 6 (estimated time: )
 
 Coming soon!
 
