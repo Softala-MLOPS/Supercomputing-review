@@ -11,12 +11,18 @@ This review covers the tutorials on integrating distributed computing in MLOps. 
 
 [Link to part 1](https://github.com/K123AsJ0k1/multi-cloud-hpc-oss-mlops-platform/blob/studying/tutorials/integration/studying/tutorial_for_integration_part_1.ipynb)
 
-## Synopsis
+## Summary
+
+- Defining concepts being used
+- Explained why Python was chosen as the coding language
+- Explaining the use of JupyterLab
+- Explaining the use of Pydantic
+- Docker setup
 
 ## What works
 
 Huang:
-- Defining the terms and concepts at the start clearly (Allas, Mycsc account etc.)
+- Defining concepts at the start clearly (Allas, Mycsc account etc.)
 - Specific versions of dependencies mentioned in case of problems and solutions to them
 - Examples of dictionaries
 
@@ -33,7 +39,7 @@ Huang:
 
 [Link to part 2](https://github.com/K123AsJ0k1/multi-cloud-hpc-oss-mlops-platform/blob/studying/tutorials/integration/studying/tutorial_for_integration_part_2.ipynb)
 
-## Synopsis
+## Summary
 
 ## What works
 
@@ -43,7 +49,7 @@ Huang:
 
 [Link to part 3](https://github.com/K123AsJ0k1/multi-cloud-hpc-oss-mlops-platform/blob/studying/tutorials/integration/studying/tutorial_for_integration_part_3.ipynb)
 
-## Synopsis
+## Summary
 
 ## What works
 
@@ -53,7 +59,7 @@ Huang:
 
 [Link to part 4](https://github.com/K123AsJ0k1/multi-cloud-hpc-oss-mlops-platform/blob/studying/tutorials/integration/studying/tutorial_for_integration_part_4.ipynb)
 
-## Synopsis
+## Summary
 
 ## What works
 
@@ -63,7 +69,7 @@ Huang:
 
 [Link to part 5](https://github.com/K123AsJ0k1/multi-cloud-hpc-oss-mlops-platform/blob/studying/tutorials/integration/studying/tutorial_for_integration_part_5.ipynb)
 
-## Synopsis
+## Summary
 
 ## What works
 
@@ -73,7 +79,7 @@ Huang:
 
 Coming soon!
 
-## Synopsis
+## Summary
 
 ## What works
 
