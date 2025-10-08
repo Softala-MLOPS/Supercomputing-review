@@ -18,6 +18,7 @@ This review covers the tutorials on integrating distributed computing in MLOps. 
 - Explained why Python was chosen as the coding language
 - Explaining the use of JupyterLab
 - Explaining the use of Pydantic
+- Explaining the use of YAML
 - Docker setup
 
 ## What works
@@ -28,10 +29,9 @@ Huang:
 - Examples of dictionaries
 
 Jukka:
-- The lists of separated systemintegrations and enviroment tools are really good
+- The lists of separated system integrations and enviroment tools are really good
 - The conclusion to choose certain technologies (for example Python) were clearly justifyed in the document
 - Examples of usage of technologies in the document were good
--  
 
 ## Suggested improvements
 
@@ -44,9 +44,12 @@ Huang:
 
 Jukka:
 - Naming could be done on the links in the notebook file of the useful material lists
-- The examples aren't completely clear in every step
+- Not all of the examples aren't completely clear in every step (Pydantic and YAML)
 - Simplified and more visual presentations or animations could work for the data scientist who are going to be using these platforms
 - We could have a hierarcical view of the technologies and the correlations between them
+
+## Questions
+- Why do we need YAML & Pydantic in the project (What does the JSON validation and YAML's pydantic validation mean?)?
 
 # Part 2 (estimated time: 1h)
 
