@@ -11,6 +11,8 @@ This review covers the tutorials on integrating distributed computing in MLOps. 
 
 [Link to part 1](https://github.com/K123AsJ0k1/multi-cloud-hpc-oss-mlops-platform/blob/studying/tutorials/integration/studying/tutorial_for_integration_part_1.ipynb)
 
+## Synopsis
+
 ## What works
 
 Huang:
@@ -31,6 +33,8 @@ Huang:
 
 [Link to part 2](https://github.com/K123AsJ0k1/multi-cloud-hpc-oss-mlops-platform/blob/studying/tutorials/integration/studying/tutorial_for_integration_part_2.ipynb)
 
+## Synopsis
+
 ## What works
 
 ## Suggested improvements
@@ -38,6 +42,8 @@ Huang:
 # Part 3
 
 [Link to part 3](https://github.com/K123AsJ0k1/multi-cloud-hpc-oss-mlops-platform/blob/studying/tutorials/integration/studying/tutorial_for_integration_part_3.ipynb)
+
+## Synopsis
 
 ## What works
 
@@ -47,6 +53,8 @@ Huang:
 
 [Link to part 4](https://github.com/K123AsJ0k1/multi-cloud-hpc-oss-mlops-platform/blob/studying/tutorials/integration/studying/tutorial_for_integration_part_4.ipynb)
 
+## Synopsis
+
 ## What works
 
 ## Suggested improvements
@@ -55,6 +63,8 @@ Huang:
 
 [Link to part 5](https://github.com/K123AsJ0k1/multi-cloud-hpc-oss-mlops-platform/blob/studying/tutorials/integration/studying/tutorial_for_integration_part_5.ipynb)
 
+## Synopsis
+
 ## What works
 
 ## Suggested improvements
@@ -62,6 +72,8 @@ Huang:
 # Part 6
 
 Coming soon!
+
+## Synopsis
 
 ## What works
 
