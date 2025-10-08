@@ -48,15 +48,28 @@ Jukka:
 - Simplified and more visual presentations or animations could work for the data scientist who are going to be using these platforms
 - We could have a hierarcical view of the technologies and the correlations between them
 
-# Part 2 (estimated time: )
+# Part 2 (estimated time: 1h)
 
 [Link to part 2](https://github.com/K123AsJ0k1/multi-cloud-hpc-oss-mlops-platform/blob/studying/tutorials/integration/studying/tutorial_for_integration_part_2.ipynb)
 
 ## Summary
+- Explanation of FastAPI and how Submttier and Kubernetes Forwarder communicate through the Uvicorn server
+- Explanation of the FastApi logs, application file structure and important parts of the fastApi. Document also tells how APIRouters and their routes work
+- Docker Compose explained and how to use it
+- Redis explained and how to use it
+- Examples of using the created/stored Redis pickled data 
 
 ## What works
+Jukka: 
+- How to check localhost and the fastapi logs is valuable help
+- Explaining of the fastapi is done very well. The important parts list is good
+- Examples of how to use the commands are clear
+- The entire document is much more clearer than the first one because there are fewer new technologies and the correlation between everything is much more clearer
 
 ## Suggested improvements
+Jukka:
+- The examples could include videos and animations
+- Summary of the most important things in the end of the document
 
 # Part 3 (estimated time: )
 
