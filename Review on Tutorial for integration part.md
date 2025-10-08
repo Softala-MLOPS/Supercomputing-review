@@ -7,13 +7,14 @@ This review covers the tutorials on integrating distributed computing in MLOps. 
 - [Move to part 5](#part-5)
 - [Part 6](#part-6) coming soon!
 
-# Part 1 (estimated time: 4h)
+# Part 1 (estimated time: 4h + 2,5h)
 
 [Link to part 1](https://github.com/K123AsJ0k1/multi-cloud-hpc-oss-mlops-platform/blob/studying/tutorials/integration/studying/tutorial_for_integration_part_1.ipynb)
 
 ## Summary
 
-- Defining concepts being used
+- Defining concepts being used and the terminology behind every important concept
+- Tells the meaning behind the documentation
 - Explained why Python was chosen as the coding language
 - Explaining the use of JupyterLab
 - Explaining the use of Pydantic
@@ -26,6 +27,12 @@ Huang:
 - Specific versions of dependencies mentioned in case of problems and solutions to them
 - Examples of dictionaries
 
+Jukka:
+- The lists of separated systemintegrations and enviroment tools are really good
+- The conclusion to choose certain technologies (for example Python) were clearly justifyed in the document
+- Examples of usage of technologies in the document were good
+-  
+
 ## Suggested improvements
 
 Huang:
@@ -34,6 +41,12 @@ Huang:
 - Commands highlighted
 - If abbreviations are used, would be nice to be included in the defining part
 - If there is time, screenshots or guidevideos usually help visually, especially to complete newbies
+
+Jukka:
+- Naming could be done on the links in the notebook file of the useful material lists
+- The examples aren't completely clear in every step
+- Simplified and more visual presentations or animations could work for the data scientist who are going to be using these platforms
+- We could have a hierarcical view of the technologies and the correlations between them
 
 # Part 2 (estimated time: )
 
