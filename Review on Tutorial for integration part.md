@@ -63,6 +63,9 @@ Jukka:
 - Examples of using the created/stored Redis pickled data 
 
 ## What works
+
+Huang:
+
 Jukka: 
 - How to check localhost and the fastapi logs is valuable help
 - Explaining of the fastapi is done very well. The important parts list is good
@@ -70,6 +73,10 @@ Jukka:
 - The entire document is much more clearer than the first one because there are fewer new technologies and the correlation between everything is much more clearer
 
 ## Suggested improvements
+
+Huang:
+- Gets a bit confusing where commands should be typed
+
 Jukka:
 - The examples could include videos and animations
 - Summary of the most important things in the end of the document
