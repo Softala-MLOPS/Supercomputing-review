@@ -51,12 +51,12 @@ Jukka:
 ## Questions
 - Why do we need YAML & Pydantic in the project (What does the JSON validation and YAML's pydantic validation mean?)?
 
-# Part 2 (estimated time: 1h)
+# Part 2 (estimated time: 2h + 1h)
 
 [Link to part 2](https://github.com/K123AsJ0k1/multi-cloud-hpc-oss-mlops-platform/blob/studying/tutorials/integration/studying/tutorial_for_integration_part_2.ipynb)
 
 ## Summary
-- Explanation of FastAPI and how Submttier and Kubernetes Forwarder communicate through the Uvicorn server
+- Explanation of FastAPI and how Submitter and Kubernetes Forwarder communicate through the Uvicorn server
 - Explanation of the FastApi logs, application file structure and important parts of the fastApi. Document also tells how APIRouters and their routes work
 - Docker Compose explained and how to use it
 - Redis explained and how to use it
@@ -65,6 +65,7 @@ Jukka:
 ## What works
 
 Huang:
+- The structure of separating the application into smaller files, easier to pinpoint possible issues
 
 Jukka: 
 - How to check localhost and the fastapi logs is valuable help
@@ -75,7 +76,11 @@ Jukka:
 ## Suggested improvements
 
 Huang:
-- Gets a bit confusing where commands should be typed
+- A bit confusing at first where commands should be typed, what directory etc. (initial installation or some separate app?)
+- Concrete examples or more explanation on different factors, difficult to imagine without prior experience
+- Naming conventions on "useful material", step-by-step guiding because initial assumption is just "extra material"
+- What are the things in braces for? (Between the Redis configurations)
+- Re-enacting steps should bring similar results each time
 
 Jukka:
 - The examples could include videos and animations
