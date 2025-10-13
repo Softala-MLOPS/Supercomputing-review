@@ -66,6 +66,7 @@ Jukka:
 
 Huang:
 - The structure of separating the application into smaller files, easier to pinpoint possible issues
+- The useful materials themselves are nice and clear
 
 Jukka: 
 - How to check localhost and the fastapi logs is valuable help
