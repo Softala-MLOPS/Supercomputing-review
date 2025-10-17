@@ -7,7 +7,7 @@ This review covers the tutorials on integrating distributed computing in MLOps. 
 - [Move to part 5](#part-5)
 - [Part 6](#part-6) coming soon!
 
-# Part 1 (estimated time: 4h + 2,5h)
+# Part 1 (estimated time: H:4h; J:2,5h; Together:1,5h)
 
 [Link to part 1](https://github.com/K123AsJ0k1/multi-cloud-hpc-oss-mlops-platform/blob/studying/tutorials/integration/studying/tutorial_for_integration_part_1.ipynb)
 
@@ -51,7 +51,7 @@ Jukka:
 ## Questions
 - Why do we need YAML & Pydantic in the project (What does the JSON validation and YAML's pydantic validation mean?)?
 
-# Part 2 (estimated time: 2h + 1h)
+# Part 2 (estimated time: H:2h; J:1,5h; Together:1h)
 
 [Link to part 2](https://github.com/K123AsJ0k1/multi-cloud-hpc-oss-mlops-platform/blob/studying/tutorials/integration/studying/tutorial_for_integration_part_2.ipynb)
 
@@ -86,6 +86,10 @@ Huang:
 Jukka:
 - The examples could include videos and animations
 - Summary of the most important things in the end of the document
+
+## Questions
+- Is it okay to assume that data scientist are able to use the technologies only by reading this documentary if they don't have any prior experience with software development?
+- Could there be a better alternative for the examples that show the coding in practice? Could the examples be better explained in the documentary? (Redis in the end of this document)
 
 # Part 3 (estimated time: )
 
