@@ -93,6 +93,11 @@ Jukka:
 
 ## Summary
 
+- Celery with Redis works as a message broker, automating interactions between separate containers and systems
+- Flower enables easier monitoring and debugging of Celery tasks
+- Celery Beat enables scheduling of Celery tasks
+- Explaining the use of Microservice Architectures
+
 ## What works
 
 ## Suggested improvements
