@@ -1,11 +1,13 @@
-This review covers the tutorials on integrating distributed computing in MLOps. There are 6 parts.
+This review covers the tutorials on integrating distributed computing in MLOps. There are 8 parts.
 
 - [Move to part 1](#part-1)
 - [Move to part 2](#part-2)
 - [Move to part 3](#part-3)
 - [Move to part 4](#part-4)
 - [Move to part 5](#part-5)
-- [Part 6](#part-6) coming soon!
+- [Move to part 6](#part-6)
+- [Part 7](#part-7) coming soon!
+- [Part 8](#part-8) coming soon!
 
 # Part 1 (estimated time: H:4h; J:2,5h; Together:1,5h)
 
@@ -106,6 +108,8 @@ Jukka:
 
 ## Suggested improvements
 
+## Questions
+
 # Part 4 (estimated time: )
 
 [Link to part 4](https://github.com/K123AsJ0k1/multi-cloud-hpc-oss-mlops-platform/blob/studying/tutorials/integration/studying/tutorial_for_integration_part_4.ipynb)
@@ -115,6 +119,8 @@ Jukka:
 ## What works
 
 ## Suggested improvements
+
+## Questions
 
 # Part 5 (estimated time: )
 
@@ -126,7 +132,21 @@ Jukka:
 
 ## Suggested improvements
 
+## Questions
+
 # Part 6 (estimated time: )
+
+[Link to part 6](https://github.com/K123AsJ0k1/multi-cloud-hpc-oss-mlops-platform/blob/studying/tutorials/integration/studying/tutorial_for_integration_part_6.ipynb)
+
+## Summary
+
+## What works
+
+## Suggested improvements
+
+## Questions
+
+# Part 7 (estimated time: )
 
 Coming soon!
 
@@ -135,3 +155,17 @@ Coming soon!
 ## What works
 
 ## Suggested improvements
+
+## Questions
+
+# Part 8 (estimated time: )
+
+Coming soon!
+
+## Summary
+
+## What works
+
+## Suggested improvements
+
+## Questions
