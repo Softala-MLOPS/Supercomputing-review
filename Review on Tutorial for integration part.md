@@ -123,6 +123,9 @@ Together:
 
 ## Suggested improvements
 
+Jukka:
+- New supporting learning material (for example youtube)
+
 ## Questions
 
 # Part 4
