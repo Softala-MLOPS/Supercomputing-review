@@ -9,7 +9,12 @@ This review covers the tutorials on integrating distributed computing in MLOps. 
 - [Part 7](#part-7) coming soon!
 - [Part 8](#part-8) coming soon!
 
-# Part 1 (estimated time: H:4h; J:2,5h; Together:1,5h)
+# Part 1
+
+Estimated time:
+H: 4h
+J: 2,5h
+Together: 1,5h
 
 [Link to part 1](https://github.com/K123AsJ0k1/multi-cloud-hpc-oss-mlops-platform/blob/studying/tutorials/integration/studying/tutorial_for_integration_part_1.ipynb)
 
@@ -53,7 +58,12 @@ Jukka:
 ## Questions
 - Why do we need YAML & Pydantic in the project (What does the JSON validation and YAML's pydantic validation mean?)?
 
-# Part 2 (estimated time: H:2h; J:1,5h; Together:1h)
+# Part 2
+
+Estimated time:
+H: 2h
+J: 1,5h
+Together: 1h
 
 [Link to part 2](https://github.com/K123AsJ0k1/multi-cloud-hpc-oss-mlops-platform/blob/studying/tutorials/integration/studying/tutorial_for_integration_part_2.ipynb)
 
@@ -93,7 +103,12 @@ Jukka:
 - Is it okay to assume that data scientist are able to use the technologies only by reading this documentary if they don't have any prior experience with software development?
 - Could there be a better alternative for the examples that show the coding in practice? Could the examples be better explained in the documentary? (Redis in the end of this document)
 
-# Part 3 (estimated time: )
+# Part 3
+
+Estimated time:
+H:
+J:
+Together:
 
 [Link to part 3](https://github.com/K123AsJ0k1/multi-cloud-hpc-oss-mlops-platform/blob/studying/tutorials/integration/studying/tutorial_for_integration_part_3.ipynb)
 
@@ -110,7 +125,12 @@ Jukka:
 
 ## Questions
 
-# Part 4 (estimated time: )
+# Part 4
+
+Estimated time:
+H:
+J:
+Together:
 
 [Link to part 4](https://github.com/K123AsJ0k1/multi-cloud-hpc-oss-mlops-platform/blob/studying/tutorials/integration/studying/tutorial_for_integration_part_4.ipynb)
 
@@ -122,7 +142,12 @@ Jukka:
 
 ## Questions
 
-# Part 5 (estimated time: )
+# Part 5
+
+Estimated time:
+H:
+J:
+Together:
 
 [Link to part 5](https://github.com/K123AsJ0k1/multi-cloud-hpc-oss-mlops-platform/blob/studying/tutorials/integration/studying/tutorial_for_integration_part_5.ipynb)
 
@@ -134,7 +159,12 @@ Jukka:
 
 ## Questions
 
-# Part 6 (estimated time: )
+# Part 6
+
+Estimated time:
+H:
+J:
+Together:
 
 [Link to part 6](https://github.com/K123AsJ0k1/multi-cloud-hpc-oss-mlops-platform/blob/studying/tutorials/integration/studying/tutorial_for_integration_part_6.ipynb)
 
@@ -146,7 +176,12 @@ Jukka:
 
 ## Questions
 
-# Part 7 (estimated time: )
+# Part 7
+
+Estimated time:
+H:
+J:
+Together:
 
 Coming soon!
 
@@ -158,7 +193,12 @@ Coming soon!
 
 ## Questions
 
-# Part 8 (estimated time: )
+# Part 8
+
+Estimated time:
+H:
+J:
+Together:
 
 Coming soon!
 
