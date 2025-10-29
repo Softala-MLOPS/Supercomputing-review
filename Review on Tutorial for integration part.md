@@ -6,7 +6,7 @@ This review covers the tutorials on integrating distributed computing in MLOps. 
 - [Move to part 4](#part-4)
 - [Move to part 5](#part-5)
 - [Move to part 6](#part-6)
-- [Part 7](#part-7) coming soon!
+- [Move to part 7](#part-7)
 - [Part 8](#part-8) coming soon!
 - [Part 9](#part-9) coming soon!
 - [Part 10](#part-10) coming soon!
