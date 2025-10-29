@@ -1,4 +1,4 @@
-This review covers the tutorials on integrating distributed computing in MLOps. There are 8 parts.
+This review covers the tutorials on integrating distributed computing in MLOps. There are 10 parts.
 
 - [Move to part 1](#part-1)
 - [Move to part 2](#part-2)
@@ -8,6 +8,8 @@ This review covers the tutorials on integrating distributed computing in MLOps. 
 - [Move to part 6](#part-6)
 - [Part 7](#part-7) coming soon!
 - [Part 8](#part-8) coming soon!
+- [Part 9](#part-9) coming soon!
+- [Part 10](#part-10) coming soon!
 
 # Part 1
 
@@ -186,7 +188,7 @@ H:
 J:
 Together:
 
-Coming soon!
+[Link to part 7](https://github.com/K123AsJ0k1/multi-cloud-hpc-oss-mlops-platform/blob/studying/tutorials/integration/studying/tutorial_for_integration_part_7.ipynb)
 
 ## Summary
 
@@ -197,6 +199,42 @@ Coming soon!
 ## Questions
 
 # Part 8
+
+Estimated time:
+H:
+J:
+Together:
+
+Coming soon!
+
+## Summary
+
+## What works
+
+## Suggested improvements
+
+## Questions
+
+
+# Part 9
+
+Estimated time:
+H:
+J:
+Together:
+
+Coming soon!
+
+## Summary
+
+## What works
+
+## Suggested improvements
+
+## Questions
+
+
+# Part 10
 
 Estimated time:
 H:
