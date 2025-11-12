@@ -50,6 +50,7 @@ Huang:
 - Commands highlighted
 - If abbreviations are used, would be nice to be included in the defining part
 - If there is time, screenshots or guidevideos usually help visually, especially to complete newbies
+- [The installation instructions](https://github.com/K123AsJ0k1/multi-cloud-hpc-oss-mlops-platform/tree/development/tutorials/integration) are outdated
 
 Jukka:
 - Naming could be done on the links in the notebook file of the useful material lists
