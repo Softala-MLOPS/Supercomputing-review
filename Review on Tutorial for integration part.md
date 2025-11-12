@@ -144,10 +144,20 @@ Together:
 [Link to part 4](https://github.com/K123AsJ0k1/multi-cloud-hpc-oss-mlops-platform/blob/studying/tutorials/integration/studying/tutorial_for_integration_part_4.ipynb)
 
 ## Summary
+- Apache Airflow is used as a platform to programmatically monitor workflows. We can also create and schedule the workflows with it.
+- The workflow blueprint are called DAGs and they are run similarly to kubeflow pipelines. When the workflow develops, we can modity the Submitter and Forwarder automation by modifying the DAGs.
+- TriggerDagRUnOperator is a operator that we can use to create a complex DAG that triggers smaller DAGs by defining the sub DAGs.
+- Hooks in Airflow are high-level interfaces to external platforms that remove the need to write low-level code.
+- Most of the documentation is showing the logs and code in practice that is necessary for the creation of the Airflow integration.
 
 ## What works
-
+Jukka:
+- Lots of good log information and documentation that is usable specifically for our project.
+  
 ## Suggested improvements
+Jukka:
+- Separating the theory parts of the technologies and the practice of showing coding and logs to separate blocks. Other idea is to have the concrete coding done in separate blocks of the documentation.
+- Separating the DAGs and coding into their own documentations.
 
 ## Questions
 
