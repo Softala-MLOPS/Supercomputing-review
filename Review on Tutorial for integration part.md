@@ -122,11 +122,15 @@ Together:
 - Explaining the use of Microservice Architectures
 
 ## What works
+Jukka:
+- All of the technologies in this document are clearly linked to one another so understanding was much easier this time. The document wasn't also too long.
+- The celery related technologies are much easier to understand in general
 
 ## Suggested improvements
 
 Jukka:
 - New supporting learning material (for example youtube)
+- Some of the useful material links don't work properly (last link in the microservice section)
 
 ## Questions
 
