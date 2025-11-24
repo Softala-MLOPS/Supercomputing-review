@@ -109,7 +109,7 @@ Jukka:
 # Part 3
 
 Estimated time:
-H:
+H: 1,5h
 J:
 Together:
 
@@ -123,11 +123,21 @@ Together:
 - Explaining the use of Microservice Architectures
 
 ## What works
+
+Huang:
+- Good summaries on what each technology does
+- Excellent articles on Docker and Microservices
+
 Jukka:
 - All of the technologies in this document are clearly linked to one another so understanding was much easier this time. The document wasn't also too long.
 - The celery related technologies are much easier to understand in general
 
 ## Suggested improvements
+
+Huang:
+- Naming the links and highlighting the codes would improve readability
+- Picture to demonstrate the basic structure of Microservices
+- More subheadings to quickly determine what information is currently needed
 
 Jukka:
 - New supporting learning material (for example youtube)
