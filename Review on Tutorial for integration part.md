@@ -202,6 +202,7 @@ Together: 20h
 
 Huang:
 - Steps for installing the platform
+- Lots of useful information
 
 Jukka:
 -
@@ -210,11 +211,12 @@ Jukka:
 
 Huang:
 - Too much info crammed into one part
-- Needs clearer step-by-step instructions so that the result can be reproduced
-- Recommended virtual machine doesn't NVIDIA GPUs
+- Needs clearer step-by-step instructions so that the result can be reproduced, also better for learning because abstract --> concrete
+- Recommended virtual machine doesn't have NVIDIA GPUs so having intructions to that was mildly confusing
 - Info should be divided between "Must know" and "Nice to know"
 - Not clear why some steps are needed and why some can be omitted
 - More illustrations
+- Deployment parts could almost have their own tutorial parts just for the sheer amount of pre-requisites needed
 
 Jukka:
 -
