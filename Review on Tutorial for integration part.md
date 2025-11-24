@@ -190,15 +190,34 @@ Jukka:
 Estimated time:
 H:
 J:
-Together:
+Together: 20h
 
 [Link to part 5](https://github.com/K123AsJ0k1/multi-cloud-hpc-oss-mlops-platform/blob/studying/tutorials/integration/studying/tutorial_for_integration_part_5.ipynb)
 
 ## Summary
 
+- 
+
 ## What works
 
+Huang:
+- Steps for installing the platform
+
+Jukka:
+-
+
 ## Suggested improvements
+
+Huang:
+- Too much info crammed into one part
+- Needs clearer step-by-step instructions so that the result can be reproduced
+- Recommended virtual machine doesn't NVIDIA GPUs
+- Info should be divided between "Must know" and "Nice to know"
+- Not clear why some steps are needed and why some can be omitted
+- More illustrations
+
+Jukka:
+-
 
 ## Questions
 
