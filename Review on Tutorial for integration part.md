@@ -196,7 +196,11 @@ Together: 20h
 
 ## Summary
 
-- 
+- Configuring SSH connection for easier use
+- Setting up cPouta virtual machine
+- Setting up OSS Platform
+- Explains the use of Kubernetes in Docker and what happens during installation
+- Example of installing GPU Ray with Helm charts
 
 ## What works
 
