@@ -12,16 +12,9 @@ This review covers the tutorials on integrating distributed computing in MLOps. 
 - [Part 10](#part-10) coming soon!
 
 # Part 1
-
-Estimated time:
-H: 4h
-J: 2,5h
-Together: 1,5h
-
 [Link to part 1](https://github.com/K123AsJ0k1/multi-cloud-hpc-oss-mlops-platform/blob/studying/tutorials/integration/studying/tutorial_for_integration_part_1.ipynb)
 
 ## Summary
-
 - Defining concepts being used and the terminology behind every important concept
 - Tells the meaning behind the documentation
 - Explained why Python was chosen as the coding language
@@ -31,7 +24,6 @@ Together: 1,5h
 - Docker setup
 
 ## What works
-
 Huang:
 - Defining concepts at the start clearly (Allas, Mycsc account etc.)
 - Specific versions of dependencies mentioned in case of problems and solutions to them
@@ -43,7 +35,6 @@ Jukka:
 - Examples of usage of technologies in the document were good
 
 ## Suggested improvements
-
 Huang:
 - Perhaps naming the hyperlinks? (The useful links)
 - Small typos like "cloud enviroment"
@@ -62,12 +53,6 @@ Jukka:
 - Why do we need YAML & Pydantic in the project (What does the JSON validation and YAML's pydantic validation mean?)?
 
 # Part 2
-
-Estimated time:
-H: 2h
-J: 1,5h
-Together: 1h
-
 [Link to part 2](https://github.com/K123AsJ0k1/multi-cloud-hpc-oss-mlops-platform/blob/studying/tutorials/integration/studying/tutorial_for_integration_part_2.ipynb)
 
 ## Summary
@@ -78,7 +63,6 @@ Together: 1h
 - Examples of using the created/stored Redis pickled data 
 
 ## What works
-
 Huang:
 - The structure of separating the application into smaller files, easier to pinpoint possible issues
 - The useful materials themselves are nice and clear
@@ -90,7 +74,6 @@ Jukka:
 - The entire document is much more clearer than the first one because there are fewer new technologies and the correlation between everything is much more clearer
 
 ## Suggested improvements
-
 Huang:
 - A bit confusing at first where commands should be typed, what directory etc. (initial installation or some separate app?)
 - Concrete examples or more explanation on different factors, difficult to imagine without prior experience
@@ -107,23 +90,15 @@ Jukka:
 - Could there be a better alternative for the examples that show the coding in practice? Could the examples be better explained in the documentary? (Redis in the end of this document)
 
 # Part 3
-
-Estimated time:
-H: 1,5h
-J:
-Together:
-
 [Link to part 3](https://github.com/K123AsJ0k1/multi-cloud-hpc-oss-mlops-platform/blob/studying/tutorials/integration/studying/tutorial_for_integration_part_3.ipynb)
 
 ## Summary
-
 - Celery with Redis works as a message broker, automating interactions between separate containers and systems
 - Flower enables easier monitoring and debugging of Celery tasks
 - Celery Beat enables scheduling of Celery tasks
 - Explaining the use of Microservice Architectures
 
 ## What works
-
 Huang:
 - Good summaries on what each technology does
 - Excellent articles on Docker and Microservices
@@ -133,7 +108,6 @@ Jukka:
 - The celery related technologies are much easier to understand in general
 
 ## Suggested improvements
-
 Huang:
 - Naming the links and highlighting the codes would improve readability
 - Picture to demonstrate the basic structure of Microservices
@@ -146,16 +120,9 @@ Jukka:
 ## Questions
 
 # Part 4
-
-Estimated time:
-H: 2h, more if all details are inspected thoroughly
-J:
-Together:
-
 [Link to part 4](https://github.com/K123AsJ0k1/multi-cloud-hpc-oss-mlops-platform/blob/studying/tutorials/integration/studying/tutorial_for_integration_part_4.ipynb)
 
 ## Summary
-
 - Apache Airflow is used as a platform to programmatically monitor workflows. We can also create and schedule the workflows with it.
 - The workflow blueprint are called DAGs and they are run similarly to kubeflow pipelines. When the workflow develops, we can modity the Submitter and Forwarder automation by modifying the DAGs.
 - TriggerDagRUnOperator is a operator that we can use to create a complex DAG that triggers smaller DAGs by defining the sub DAGs.
@@ -163,7 +130,6 @@ Together:
 - Most of the documentation is showing the logs and code in practice that is necessary for the creation of the Airflow integration.
 
 ## What works
-
 Huang:
 - Lots of good information, provided there is time
 
@@ -171,7 +137,6 @@ Jukka:
 - Lots of good log information and documentation that is usable specifically for our project.
   
 ## Suggested improvements
-
 Huang:
 - Too much info crammed into one part, gets overwhelming very quickly
 - Info should be separated into "Must know" and "Nice to know"
@@ -184,35 +149,30 @@ Jukka:
 - Separating the DAGs and coding into their own documentations.
 
 ## Questions
-
+- How does the usage of DAG's compare to everything else? Is there a possibility to use other technology for this portion?
 # Part 5
-
-Estimated time:
-H:
-J:
-Together: 20h
-
 [Link to part 5](https://github.com/K123AsJ0k1/multi-cloud-hpc-oss-mlops-platform/blob/studying/tutorials/integration/studying/tutorial_for_integration_part_5.ipynb)
 
 ## Summary
-
 - Configuring SSH connection for easier use
 - Setting up cPouta virtual machine
 - Setting up OSS Platform
 - Explains the use of Kubernetes in Docker and what happens during installation
 - Example of installing GPU Ray with Helm charts
+- Setting up YAML files if suitable helm chart doesn't exist
+- Examples of adding applications to OSS
+- Usage of Istio service mesh to handle outside connections, Kiali to handle network debugging and Openstack security groups to handle restricted access
 
 ## What works
-
 Huang:
 - Steps for installing the platform
 - Lots of useful information
 
 Jukka:
--
+- All of the important parts to create applications can be found here
+- The logs can be helpful if user is in trouble with the configuration or installation
 
 ## Suggested improvements
-
 Huang:
 - Too much info crammed into one part
 - Needs clearer step-by-step instructions so that the result can be reproduced, also better for learning because abstract --> concrete
@@ -223,7 +183,9 @@ Huang:
 - Deployment parts could almost have their own tutorial parts just for the sheer amount of pre-requisites needed
 
 Jukka:
--
+- Definitely too many links and documentation for one notebook file if the reader has no previous experience with these technologies
+- It's unclear whether the usage of NVIDIA GPU's is mandatory
+- Documentation is too long, the technologies should be separated in to smaller portions that could be studied on their own
 
 ## Questions
 
