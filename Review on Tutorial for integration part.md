@@ -191,44 +191,56 @@ Jukka:
 
 # Part 6
 
-Estimated time:
-H:
-J:
-Together:
-
 [Link to part 6](https://github.com/K123AsJ0k1/multi-cloud-hpc-oss-mlops-platform/blob/studying/tutorials/integration/studying/tutorial_for_integration_part_6.ipynb)
 
 ## Summary
+- 
 
 ## What works
 
+Huang:
+-
+
+Jukka:
+-
+
 ## Suggested improvements
+
+Huang:
+- 
+
+Jukka:
+- 
 
 ## Questions
 
 # Part 7
 
-Estimated time:
-H:
-J:
-Together:
-
 [Link to part 7](https://github.com/K123AsJ0k1/multi-cloud-hpc-oss-mlops-platform/blob/studying/tutorials/integration/studying/tutorial_for_integration_part_7.ipynb)
 
 ## Summary
+-
 
 ## What works
 
+Huang:
+- 
+
+Jukka:
+- 
+
 ## Suggested improvements
+
+
+Huang:
+- 
+
+Jukka:
+- 
 
 ## Questions
 
 # Part 8
-
-Estimated time:
-H:
-J:
-Together:
 
 Coming soon!
 
@@ -243,11 +255,6 @@ Coming soon!
 
 # Part 9
 
-Estimated time:
-H:
-J:
-Together:
-
 Coming soon!
 
 ## Summary
@@ -260,11 +267,6 @@ Coming soon!
 
 
 # Part 10
-
-Estimated time:
-H:
-J:
-Together:
 
 Coming soon!
 
