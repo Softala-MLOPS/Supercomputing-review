@@ -207,7 +207,8 @@ Jukka:
 ## Suggested improvements
 
 Huang:
-- 
+- Data could be highlighted and collapsed/expanded
+- Naming the links
 
 Jukka:
 - 
