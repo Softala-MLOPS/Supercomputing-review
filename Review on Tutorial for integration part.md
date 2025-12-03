@@ -194,7 +194,8 @@ Jukka:
 [Link to part 6](https://github.com/K123AsJ0k1/multi-cloud-hpc-oss-mlops-platform/blob/studying/tutorials/integration/studying/tutorial_for_integration_part_6.ipynb)
 
 ## Summary
-- 
+- Setting up local Ray cluster
+- Ray jobs
 
 ## What works
 
@@ -209,6 +210,8 @@ Jukka:
 Huang:
 - Data could be highlighted and collapsed/expanded
 - Naming the links
+- No path called "deployments/ray/compose"
+- cpu-ray-cluster.yaml and gpu-ray-cluster.yaml are missing
 
 Jukka:
 - 
