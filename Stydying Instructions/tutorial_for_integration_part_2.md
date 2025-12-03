@@ -5,8 +5,8 @@ distributed computing systems for MLOps systems.
 
 ## Index
 
-[FastAPI](##FastAPI)
-
+1. [FastAPI](#FastAPI)
+2. [Redis](Redis)
 
 ## FastAPI
 
