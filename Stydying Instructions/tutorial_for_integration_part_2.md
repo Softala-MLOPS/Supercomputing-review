@@ -6,7 +6,8 @@ distributed computing systems for MLOps systems.
 ## Index
 
 1. [FastAPI](#FastAPI)
-2. [Redis](#Redis)
+2. [Docker Compose](#Docker-Compose)
+3. [Redis](#Redis)
 
 ## FastAPI
 
@@ -430,6 +431,7 @@ print(stored_nested_dict)
 One can find further discussion on how to implement a better system:
 
 [Store Nested data structures and Python objects in Redis Cache](https://medium.com/@vickypalaniappan12/store-nested-data-structures-and-python-objects-in-redis-cache-814f03436d89)
+<br>
 [Is it possible to store nested dict in Redis as hash structure](https://stackoverflow.com/questions/70203777/is-it-possible-to-store-nested-dict-in-redis-as-hash-structure)
 
 Besides being a storage Redis is used for handling concurrent locking to prevent 
@@ -518,6 +520,9 @@ if not lock_active:
 ```
 
 No lock
+<br>
 Lock created
+<br>
 Code block
+<br>
 Lock released:True
