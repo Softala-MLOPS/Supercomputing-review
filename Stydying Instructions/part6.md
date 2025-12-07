@@ -1308,11 +1308,613 @@ You should now be able to see dashboards at:
 
 With these we are now ready to send jobs into Kuberay cluster that uses Docker compose Ray clusters.
 ## Local-Cloud Ray Orhestraction
+Useful material:
+- https://docs.ray.io/en/latest/cluster/running-applications/job-submission/ray-client.html#ray-client-ref
+- https://docs.ray.io/en/latest/ray-core/api/doc/ray.init.html
+- https://docs.ray.io/en/latest/serve/production-guide/kubernetes.html
+- https://docs.ray.io/en/latest/cluster/kubernetes/user-guides/config.html
 
+As an exception to our rules, for this demonstration we will use a experimental feature to centralize the command of Ray clusters with same versions by using ray.init. By default we interact with the cluster in the following way:
 ```
+# Gets host connection (usually handeled by tasks)
+ray.init()
+# Executes code on host cluster
+cluster_resources = ray.available_resources(),
+cluster_nodes = ray.nodes()
+```
+By using allow_multiple setting, we can interact with remote clusters with:
+```
+# Gets remote connection
+remote_client = ray.init(
+    address = remote_url, 
+    allow_multiple = True
+)
 
+# Creates a session
+with remote_client:
+    # Executes code on remote cluster
+    cluster_resources = ray.available_resources(),
+    cluster_nodes = ray.nodes()
+# Disconnets to return control to host
+head_client.disconnect()
 ```
+Be aware that we cannot share Ray objects between clusters, but we can give and get data out of a session with Python objects. You can use the following block to reactivate ray functions found at functions/ray folder:
+```
+%run (fill_path)multi-cloud-hpc-oss-mlops-platform/tutorials/integration/development/studying/functions/ray/setup.py
+%run (fill_path)/multi-cloud-hpc-oss-mlops-platform/tutorials/integration/development/studying/functions/ray/use.py
+```
+2025-10-14 09:51:16,213	INFO util.py:154 -- Missing packages: ['ipywidgets']. Run `pip install -U ipywidgets`, then restart the notebook server for rich notebook output.<br></br>
+Now, we can run the provided code in applications/ray/integration by getting a cloud connection:
+```
+ray_cloud_client = ray_setup_client(
+    dashboard_address = 'ray.cloud.dash-1.oss:7001',
+    timeout = 5
+)
+```
+Here you need to give the client service addresses, which you can check with:
+```
+kubectl get service -n integration 
+ray-local-1-client           ClusterIP   10.96.244.12    <none>        8151/TCP   110m
+ray-local-1-dash             ClusterIP   10.96.248.34    <none>        8100/TCP   110m
+ray-local-1-metrics-head     ClusterIP   10.96.200.194   <none>        8201/TCP   110m
+ray-local-1-metrics-worker   ClusterIP   10.96.145.118   <none>        8202/TCP   110m
+ray-local-1-serve            ClusterIP   10.96.170.20    <none>        8301/TCP   110m
+ray-local-2-client           ClusterIP   10.96.133.42    <none>        8152/TCP   110m
+ray-local-2-dash             ClusterIP   10.96.113.220   <none>        8101/TCP   110m
+ray-local-2-metrics-head     ClusterIP   10.96.9.168     <none>        8203/TCP   110m
+ray-local-2-metrics-worker   ClusterIP   10.96.45.177    <none>        8204/TCP   110m
+ray-local-2-serve            ClusterIP   10.96.150.197   <none>        8302/TCP   110m
+ray-local-3-client           ClusterIP   10.96.133.8     <none>        8153/TCP   110m
+ray-local-3-dash             ClusterIP   10.96.89.139    <none>        8102/TCP   110m
+ray-local-3-metrics-head     ClusterIP   10.96.86.183    <none>        8205/TCP   110m
+ray-local-3-metrics-worker   ClusterIP   10.96.252.53    <none>        8206/TCP   110m
+ray-local-3-serve            ClusterIP   10.96.108.106   <none>        8303/TCP   110m
+```
+Be aware that kubernetes address inside the cluster are always (service-name).(namespace).svc.cluster.local:(port) format, which means we get the following:
+```
+process_parameters = {
+    'worker-number': 2,
+    'actor-number': 2,
+    'cluster-urls': [
+        'ray-local-1-client.integration.svc.cluster.local:8151',
+        'ray-local-2-client.integration.svc.cluster.local:8152',
+        'ray-local-3-client.integration.svc.cluster.local:8153'
+    ],
+    'resource-weights': {
+        'CPU': 0.6,
+        'RAM': 0.2,
+        'GPU': 0.2
+    }
+}
+```
+We will again leave this dummy parameter for future parts:
+```
+storage_parameters = {}
+```
+Here the only thing we have changed is the amount to ensure every cluster gets enough work
+```
+data_parameters = {
+    'amount': 400,
+    'lengths': [
+        2,
+        3,
+        4,
+        5,
+        6,
+        7
+    ],
+    'extensions': [
+        'txt',
+        'py',
+        'md',
+        'ipynb',
+        'yaml',
+        'sh'
+    ],
+    'priority': {
+        'txt': 1,
+        'sh': 2,
+        'md': 3,
+        'yaml': 4,
+        'py': 5,
+        'ipynb': 6
+    },
+    'tuple-batch': 5,
+    'stats-batch': 5
+}
+```
+Here wer again join the parameters
+```
+job_parameters = {
+    'process-parameters': process_parameters,
+    'storage-parameters': storage_parameters,
+    'data-parameters': data_parameters
+}
+```
+Now we can again run this job with:
+```
+job_id = ray_submit_job(
+    ray_client = ray_cloud_client,
+    ray_parameters = job_parameters,
+    ray_job_file = 'parallel_clustering.py',
+    ray_directory = '(fill_path)/multi-cloud-hpc-oss-mlops-platform/tutorials/integration/development/studying/applications/ray/integration',
+    ray_job_envs = {},
+    ray_job_packages = []
+)
+```
+If there were no errors, you can check the running job at http://ray.cloud.serve-1.oss:7001. To see the logs, do the following
+- Click first job under recent jobs
+- Scroll down to see logs
 
+When you see a row similar to
 ```
+INFO 2025-10-08 04:28:20,679 serve 1321 -- Application 'requests' is ready at http://0.0.0.0:8350/.
+```
+you can run the following block to request created output:
+```
+cloud_1_serve_status, cloud_1_serve_output = ray_serve_route(
+    address = 'ray.cloud.serve-1.oss',
+    port = '7001',
+    route_path = '/output',
+    route_type = 'GET',
+    route_input = {},
+    timeout = 5
+)
+```
+http://ray.cloud.serve-1.oss:7001/output<br></br>
+Here we again get the created logs:
+```
+job_status, job_logs = ray_wait_job(
+    ray_client = ray_cloud_client,
+    ray_job_id = job_id, 
+    timeout = 300
+)
+print(job_logs)
+```
+```
+status: SUCCEEDED
+2025-10-14 05:00:04,874	INFO job_manager.py:531 -- Runtime env is setting up.
+Starting Ray job
+Python version is:3.12.9 | packaged by conda-forge | (main, Mar  4 2025, 22:48:41) [GCC 13.3.0]
+Ray version is:2.49.2
+Getting and loading input
+Running parallel clustering
+2025-10-14 05:00:07,746	INFO worker.py:1630 -- Using address 10.244.0.87:6379 set in the environment variable RAY_ADDRESS
+2025-10-14 05:00:07,749	INFO worker.py:1771 -- Connecting to existing Ray cluster at address: 10.244.0.87:6379...
+2025-10-14 05:00:07,766	INFO worker.py:1942 -- Connected to Ray cluster. View the dashboard at http://10.244.0.87:8265 
+Main
+Getting resources
+2025-10-14 05:00:07,786	INFO client_builder.py:242 -- Passing the following kwargs to ray.init() on the server: log_to_driver
+SIGTERM handler is not set because current thread is not the main thread.
+ray://ray-local-1-client.integration.svc.cluster.local:8151
+Getting resources
+2025-10-14 05:00:09,657	INFO client_builder.py:242 -- Passing the following kwargs to ray.init() on the server: log_to_driver
+SIGTERM handler is not set because current thread is not the main thread.
+ray://ray-local-2-client.integration.svc.cluster.local:8152
+Getting resources
+2025-10-14 05:00:13,360	INFO client_builder.py:242 -- Passing the following kwargs to ray.init() on the server: log_to_driver
+SIGTERM handler is not set because current thread is not the main thread.
+ray://ray-local-3-client.integration.svc.cluster.local:8153
+Getting resources
+Main
+Running cluster tasks
+Dividing cluster files for 2 workers
+Creating 2 provider actors
+Starting preprocess tasks
+Waiting preprocess tasks and starting calculator tasks
+Waiting calculator tasks
+2025-10-14 05:00:16,752	INFO client_builder.py:242 -- Passing the following kwargs to ray.init() on the server: log_to_driver
+SIGTERM handler is not set because current thread is not the main thread.
+ray://ray-local-1-client.integration.svc.cluster.local:8151
+Running file processing
+Dividing cluster files for 2 workers
+Creating 2 provider actors
+Starting preprocess tasks
+Waiting preprocess tasks and starting calculator tasks
+Waiting calculator tasks
+2025-10-14 05:00:20,030	INFO client_builder.py:242 -- Passing the following kwargs to ray.init() on the server: log_to_driver
+SIGTERM handler is not set because current thread is not the main thread.
+ray://ray-local-2-client.integration.svc.cluster.local:8152
+Running file processing
+Dividing cluster files for 2 workers
+Creating 2 provider actors
+Starting preprocess tasks
+Waiting preprocess tasks and starting calculator tasks
+Waiting calculator tasks
+2025-10-14 05:00:26,345	INFO client_builder.py:242 -- Passing the following kwargs to ray.init() on the server: log_to_driver
+SIGTERM handler is not set because current thread is not the main thread.
+ray://ray-local-3-client.integration.svc.cluster.local:8153
+Running file processing
+Dividing cluster files for 2 workers
+Creating 2 provider actors
+Starting preprocess tasks
+Waiting preprocess tasks and starting calculator tasks
+Waiting calculator tasks
+INFO 2025-10-14 05:00:33,795 serve 5420 -- Started Serve in namespace "serve".
+Starting Serve
+(ProxyActor pid=5900) INFO 2025-10-14 05:00:33,707 proxy 10.244.0.87 -- Proxy starting on node 063be2a4e20c9daec8a352d0578aae6c433e2c2419e81227c4b8a3fc (HTTP port: 8000).
+(ProxyActor pid=5900) INFO 2025-10-14 05:00:33,789 proxy 10.244.0.87 -- Got updated endpoints: {}.
+INFO 2025-10-14 05:00:33,809 serve 5420 -- Connecting to existing Serve app in namespace "serve". New http options will not be applied.
+WARNING 2025-10-14 05:00:33,809 serve 5420 -- The new client HTTP config differs from the existing one in the following fields: ['host', 'location']. The new HTTP config is ignored.
+(ServeController pid=5839) INFO 2025-10-14 05:00:33,862 controller 5839 -- Deploying new version of Deployment(name='Requests', app='requests') (initial target replicas: 1).
+(ProxyActor pid=5900) INFO 2025-10-14 05:00:33,876 proxy 10.244.0.87 -- Got updated endpoints: {Deployment(name='Requests', app='requests'): EndpointInfo(route='/', app_is_cross_language=False)}.
+(ProxyActor pid=5900) INFO 2025-10-14 05:00:33,887 proxy 10.244.0.87 -- Started <ray.serve._private.router.SharedRouterLongPollClient object at 0x7f1982395220>.
+(ServeController pid=5839) INFO 2025-10-14 05:00:33,976 controller 5839 -- Adding 1 replica to Deployment(name='Requests', app='requests').
+(ServeReplica:requests:Requests pid=931, ip=10.244.0.88) INFO 2025-10-14 05:00:36,267 requests_Requests 8zpr38yu ad9dbb02-8e92-498a-8cc0-481a3058b97d -- GET / 404 2.0ms
+INFO 2025-10-14 05:00:36,941 serve 5420 -- Application 'requests' is ready at http://0.0.0.0:8000/.
+Waiting for interactions
+(ServeReplica:requests:Requests pid=931, ip=10.244.0.88) INFO 2025-10-14 05:00:46,999 requests_Requests 8zpr38yu 7c91fde5-ce84-4fa0-9f66-ff398b57439d -- GET /output 200 6.7ms
+(ServeReplica:requests:Requests pid=931, ip=10.244.0.88) INFO 2025-10-14 05:00:50,275 requests_Requests 8zpr38yu 05a03666-7f44-4f7c-87b4-4b8e752f2260 -- GET / 404 1.5ms
+(ServeReplica:requests:Requests pid=931, ip=10.244.0.88) INFO 2025-10-14 05:01:05,279 requests_Requests 8zpr38yu b287c703-00ac-4653-9deb-b1fdfcb38aaf -- GET / 404 1.7ms
+Stopping Serve
+(ServeController pid=5839) INFO 2025-10-14 05:01:17,049 controller 5839 -- Removing 1 replica from Deployment(name='Requests', app='requests').
+(ServeController pid=5839) INFO 2025-10-14 05:01:19,144 controller 5839 -- Replica(id='8zpr38yu', deployment='Requests', app='requests') is stopped.
+Job success:True
+Ray job Complete
+```
+Here the output is the same as before, but now they are divided between clusters. The values mean the following:
+- Key -> cluster number
+- Url -> Use client address
+- Data -> Data created by the cluster
+- ID -> worker, actor and batch index number joined
+- Workers -> List of workers that created the batches
+- Actors -> List of actors that processes the batches
+- Batches -> List of index numbers for the batch of a worker
+- Seed -> Mean and variance of the seeds used in creating the tuples
+- Name -> Mean and variance of the characters in alphabetical numbers used in tuples
+- Lengths -> Mean and variance of the name lengths used in tuples
+- Priority -> Mean and variance of the priority used in sorting tuples for round robin
+```
+print(cloud_1_serve_output['output'])
+```
+```
+{'0': {'url': 'Main', 'data': [{'id': '2-2-1', 'workers': [2, 2, 2, 2, 2], 'actors': [2, 2, 2, 2, 2], 'batches': [1, 2, 3, 4, 5], 'seed': {'mean': [188.0, 299.4, 209.0, 122.4, 219.0], 'variance': [9297.2, 5547.04, 10245.2, 8506.240000000002, 4854.8]}, 'name': {'mean': [12.320754716981131, 14.666666666666666, 17.352941176470587, 13.882352941176471, 12.342105263157896], 'variance': [60.63296546813814, 54.41269841269842, 50.346020761245676, 62.75086505190311, 51.85664819944598]}, 'priority': {'mean': [6.0, 5.6, 5.0, 4.6, 4.0], 'variance': [0.0, 0.24000000000000005, 0.0, 0.24000000000000005, 0.0]}, 'length': {'mean': [5.6, 4.6, 4.8, 4.0, 3.6], 'variance': [1.0399999999999998, 4.24, 1.3599999999999999, 4.4, 1.04]}}, {'id': '1-1-1', 'workers': [1, 1, 1, 1, 1], 'actors': [1, 1, 1, 1, 1], 'batches': [1, 2, 3, 4, 5], 'seed': {'mean': [164.6, 234.4, 232.2, 176.8, 280.2], 'variance': [15778.64, 9283.439999999999, 15632.16, 17671.36, 5476.16]}, 'name': {'mean': [12.87037037037037, 13.825, 16.72222222222222, 14.678571428571429, 11.731707317073171], 'variance': [48.66838134430727, 64.24437499999999, 49.25617283950617, 56.860969387755105, 62.83045806067817]}, 'priority': {'mean': [6.0, 5.8, 5.0, 4.8, 4.0], 'variance': [0.0, 0.15999999999999998, 0.0, 0.15999999999999998, 0.0]}, 'length': {'mean': [5.8, 3.6, 5.2, 3.2, 4.2], 'variance': [1.3599999999999999, 3.44, 0.5599999999999999, 3.7600000000000002, 1.3599999999999999]}}]}, '1': {'url': 'ray://ray-local-1-client.integration.svc.cluster.local:8151', 'data': [{'id': '2-2-1', 'workers': [2, 2, 2, 2, 2], 'actors': [2, 2, 2, 2, 2], 'batches': [1, 2, 3, 4, 5], 'seed': {'mean': [154.6, 196.4, 252.6, 236.0, 238.0], 'variance': [10128.24, 20159.840000000004, 9973.039999999999, 4367.6, 13240.4]}, 'name': {'mean': [13.191489361702128, 15.931034482758621, 12.44186046511628, 13.212121212121213, 13.625], 'variance': [45.814395654142146, 66.61593341260404, 61.781503515413746, 47.19742883379248, 61.921875]}, 'priority': {'mean': [5.8, 5.0, 3.6, 2.6, 1.4], 'variance': [0.15999999999999998, 0.0, 0.24, 0.24, 0.24]}, 'length': {'mean': [5.0, 3.8, 5.4, 4.6, 3.8], 'variance': [3.6, 2.16, 1.8399999999999999, 2.6399999999999997, 1.7600000000000002]}}, {'id': '1-1-1', 'workers': [1, 1, 1, 1, 1], 'actors': [1, 1, 1, 1, 1], 'batches': [1, 2, 3, 4, 5], 'seed': {'mean': [176.4, 187.6, 183.8, 242.0, 208.6], 'variance': [20395.04, 12187.84, 14477.36, 15735.2, 7880.24]}, 'name': {'mean': [13.625, 15.15625, 12.619047619047619, 12.033333333333333, 14.63888888888889], 'variance': [60.526041666666664, 44.8818359375, 60.997732426303855, 34.632222222222225, 51.730709876543216]}, 'priority': {'mean': [6.0, 5.0, 3.8, 2.8, 1.4], 'variance': [0.0, 0.0, 0.15999999999999998, 0.15999999999999998, 0.24]}, 'length': {'mean': [4.6, 4.4, 4.8, 4.0, 4.6], 'variance': [3.44, 3.44, 2.96, 2.0, 2.2399999999999998]}}]}, '2': {'url': 'ray://ray-local-2-client.integration.svc.cluster.local:8152', 'data': [{'id': '1-1-1', 'workers': [2, 2, 2, 2, 2], 'actors': [2, 2, 2, 2, 2], 'batches': [1, 2, 3, 4, 5], 'seed': {'mean': [138.8, 265.8, 200.2, 142.2, 218.4], 'variance': [11919.76, 9553.36, 14150.159999999998, 14680.960000000001, 14521.039999999999]}, 'name': {'mean': [13.403846153846153, 14.121951219512194, 15.363636363636363, 13.153846153846153, 12.228571428571428], 'variance': [46.43306213017751, 55.52171326591315, 50.655647382920115, 62.69428007889546, 55.31918367346939]}, 'priority': {'mean': [6.0, 5.6, 5.0, 4.4, 4.0], 'variance': [0.0, 0.24000000000000005, 0.0, 0.24000000000000005, 0.0]}, 'length': {'mean': [5.4, 4.4, 4.6, 4.6, 3.0], 'variance': [1.0399999999999998, 3.44, 1.0399999999999998, 3.44, 0.8]}}, {'id': '2-2-1', 'workers': [1, 1, 1, 1, 1], 'actors': [1, 1, 1, 1, 1], 'batches': [1, 2, 3, 4, 5], 'seed': {'mean': [164.2, 203.0, 173.4, 181.8, 245.2], 'variance': [14855.36, 14945.2, 9736.24, 10261.359999999999, 7986.5599999999995]}, 'name': {'mean': [13.12962962962963, 14.119047619047619, 16.735294117647058, 15.411764705882353, 13.945945945945946], 'variance': [55.816529492455416, 48.581065759637184, 42.194636678200695, 42.77162629757785, 58.42951059167276]}, 'priority': {'mean': [6.0, 5.6, 5.0, 4.6, 4.0], 'variance': [0.0, 0.24000000000000005, 0.0, 0.24000000000000005, 0.0]}, 'length': {'mean': [5.8, 4.6, 4.8, 4.0, 3.4], 'variance': [1.3599999999999999, 4.24, 1.3599999999999999, 4.4, 1.0400000000000003]}}]}, '3': {'url': 'ray://ray-local-3-client.integration.svc.cluster.local:8153', 'data': [{'id': '1-1-1', 'workers': [1, 1, 1, 1, 1], 'actors': [1, 1, 1, 1, 1], 'batches': [1, 2, 3, 4, 5], 'seed': {'mean': [97.6, 167.0, 207.6, 262.4, 159.2], 'variance': [6659.44, 13172.8, 11723.439999999999, 9650.24, 11685.76]}, 'name': {'mean': [12.321428571428571, 13.456521739130435, 15.026315789473685, 16.658536585365855, 14.758620689655173], 'variance': [46.53954081632653, 55.20463137996219, 53.394044321329645, 53.200475907198104, 55.286563614744345]}, 'priority': {'mean': [6.0, 6.0, 5.8, 5.0, 5.0], 'variance': [0.0, 0.0, 0.15999999999999998, 0.0, 0.0]}, 'length': {'mean': [6.2, 4.2, 3.2, 6.2, 3.8], 'variance': [0.5599999999999999, 0.5599999999999999, 3.7600000000000002, 0.15999999999999998, 0.5599999999999999]}}, {'id': '1-1-2', 'workers': [1, 1, 1, 1, 1], 'actors': [1, 1, 1, 1, 1], 'batches': [6, 7, 8, 9, 10], 'seed': {'mean': [144.8, 204.2, 186.6, 264.0, 141.2], 'variance': [16490.96, 9295.760000000002, 10436.640000000001, 6349.2, 5656.960000000001]}, 'name': {'mean': [17.142857142857142, 11.829787234042554, 14.0, 13.794871794871796, 10.90625], 'variance': [48.83673469387754, 54.0986871887732, 62.23529411764706, 64.72715318869164, 50.2724609375]}, 'priority': {'mean': [4.8, 4.0, 4.0, 3.2, 3.0], 'variance': [0.15999999999999998, 0.0, 0.0, 0.15999999999999998, 0.0]}, 'length': {'mean': [3.2, 5.4, 2.8, 5.4, 4.4], 'variance': [3.7600000000000002, 1.0399999999999998, 0.5599999999999999, 3.04, 0.24000000000000005]}}, {'id': '1-1-3', 'workers': [1, 1, 1, 1, 1], 'actors': [1, 1, 1, 1, 1], 'batches': [11, 12, 13, 14, 15], 'seed': {'mean': [200.8, 155.6, 83.8, 144.0, 210.0], 'variance': [9838.16, 8486.64, 7576.959999999999, 17387.2, 15459.6]}, 'name': {'mean': [12.545454545454545, 11.666666666666666, 14.846153846153847, 15.294117647058824, 18.352941176470587], 'variance': [55.97520661157025, 40.83760683760683, 44.20710059171598, 53.03114186851211, 49.87543252595155]}, 'priority': {'mean': [3.0, 2.0, 2.0, 1.4, 1.0], 'variance': [0.0, 0.0, 0.0, 0.24, 0.0]}, 'length': {'mean': [2.4, 5.8, 3.2, 4.2, 3.8], 'variance': [0.24, 0.5599999999999999, 0.5599999999999999, 3.3600000000000003, 0.5599999999999999]}}, {'id': '2-2-1', 'workers': [2, 2, 2, 2, 2], 'actors': [2, 2, 2, 2, 2], 'batches': [1, 2, 3, 4, 5], 'seed': {'mean': [157.2, 170.4, 200.2, 176.8, 222.0], 'variance': [13842.159999999998, 10399.439999999999, 11455.76, 20351.76, 9706.0]}, 'name': {'mean': [13.660714285714286, 14.466666666666667, 14.075, 12.41025641025641, 15.931034482758621], 'variance': [58.617028061224495, 57.80444444444444, 51.319374999999994, 54.54963839579223, 53.78834720570749]}, 'priority': {'mean': [6.0, 6.0, 5.6, 5.0, 5.0], 'variance': [0.0, 0.0, 0.24000000000000005, 0.0, 0.0]}, 'length': {'mean': [6.2, 4.0, 4.2, 5.8, 3.8], 'variance': [0.5599999999999999, 0.4, 5.36, 0.15999999999999998, 0.5599999999999999]}}, {'id': '2-2-2', 'workers': [2, 2, 2, 2, 2], 'actors': [2, 2, 2, 2, 2], 'batches': [6, 7, 8, 9, 10], 'seed': {'mean': [208.0, 307.4, 267.6, 241.8, 209.4], 'variance': [15678.8, 4331.4400000000005, 7994.240000000001, 10672.16, 8633.439999999999]}, 'name': {'mean': [14.642857142857142, 13.553191489361701, 13.941176470588236, 13.0, 12.90625], 'variance': [66.15816326530613, 62.92802172928927, 68.70242214532873, 42.34146341463415, 36.0849609375]}, 'priority': {'mean': [4.8, 4.0, 4.0, 3.0, 3.0], 'variance': [0.15999999999999998, 0.0, 0.0, 0.0, 0.0]}, 'length': {'mean': [3.2, 5.4, 2.8, 6.2, 4.4], 'variance': [3.7600000000000002, 1.0399999999999998, 0.5599999999999999, 0.15999999999999998, 0.24000000000000005]}}, {'id': '2-2-3', 'workers': [2, 2, 2, 2, 2], 'actors': [2, 2, 2, 2, 2], 'batches': [11, 12, 13, 14, 15], 'seed': {'mean': [286.2, 241.8, 143.2, 147.6, 215.0], 'variance': [7444.959999999999, 9726.16, 14011.359999999997, 7352.24, 13650.4]}, 'name': {'mean': [13.090909090909092, 14.179487179487179, 11.692307692307692, 16.825, 16.060606060606062], 'variance': [53.628099173553714, 53.01906640368179, 41.44378698224852, 46.744375000000005, 42.7842056932966]}, 'priority': {'mean': [3.0, 2.0, 2.0, 1.2, 1.0], 'variance': [0.0, 0.0, 0.0, 0.16000000000000006, 0.0]}, 'length': {'mean': [2.4, 5.8, 3.2, 5.2, 3.6], 'variance': [0.24, 0.5599999999999999, 0.5599999999999999, 2.9600000000000004, 0.64]}}]}}
+```
+Run these blocks if you want to see the cluster scatter plots:
+```
+cluster_output = cloud_1_serve_output['output'] 
+relevant_values = [
+    'seed',
+    'name',
+    'priority',
+    'length'
+]
+cluster_scatter_plot_data = {}
+for cluster, values in cluster_output.items():
+    data = values['data']
+    scatter_plot_data = {}
+    for summary in data:
+        group_name = summary['id']
+        for value in relevant_values:
+            if not value in scatter_plot_data:
+                scatter_plot_data[value] = {}
+            scatter_plot_data[value][group_name] = summary[value]
+    cluster_scatter_plot_data[cluster] = scatter_plot_data
+```
+```
+import numpy as np
+import matplotlib.pyplot as plt
+import matplotlib.colors as mcolors
 
+for cluster, plot_data in cluster_scatter_plot_data.items():
+    fig, axes = plt.subplots(2, 2, figsize = (7,7))
+    axes = axes.flatten()
+    plot = 0
+    global_groups = []
+    for case, data in plot_data.items():
+        color_groups = []
+        means = []
+        variances = []
+        for group, values in data.items():
+            color_groups.append(group)
+            means.append(values['mean'])
+            variances.append(values['variance'])
+        group_amount = len(color_groups)
+        cmap = plt.colormaps['tab10'].resampled(group_amount)
+        color_map = {group: cmap(i) for i, group in enumerate(list(color_groups))}
+        index = 0
+        for group in color_groups:
+            axes[plot].scatter(means[index], variances[index], color = color_map[group], label = group, alpha = 0.7)
+            index += 1
+        axes[plot].set_title(str(case))
+        axes[plot].grid(True)
+        global_groups = color_groups
+        plot += 1 
+    fig.suptitle('Parallel clustering summary scatter plot for cluster ' + str(cluster))
+    fig.supxlabel('Mean')
+    fig.supylabel('Variance')
+    handles = [plt.Line2D([], [], marker = 'o', linestyle = '', color = color_map[group], label = group) for group in global_groups]
+    fig.legend(handles = handles, title='ID')
+    plt.show()
 ```
+// CLUSTER PICTURES HERE
+
+With this, we can now take a detailed look of the applications/ray/integration code. We notice that its file structure is:
+- parallel_clustering.py
+- functions
+    - platforms
+        - ray
+            - clusters.py
+    - division.py
+    - generator.py
+- tasks
+    - collector.py
+    - preprocess.py
+- actors
+    - provider.py
+- serve
+    - requests.py
+- contexts
+    - processing.py
+- actions
+    - files.py
+
+As we can see the code is very similar to parallel_processing job with the expection being the new folders, new code and modified code. The reasoning for these changes is the aquired cluster resources and the way Ray allows us to command remote clusters. The first isolation pattern we notice is:
+```
+parallel_clustering()
+try: 
+    available_clusters = ray_available_clusters(
+        cluster_urls = cluster_urls
+    ) 
+    
+    cluster_data_ref = process_cluster_files(
+        process_parameters = process_parameters,
+        data_parameters = data_parameters,
+        cluster_urls = cluster_urls,
+        available_clusters = available_clusters
+    )
+except Exception as e:
+    print('Parallel clustering error')
+    print(e)
+    return False
+```
+Here we see that unified interactions clusters have been closed of into functions to ensure that ray.init() are not run multiple times. This is followed by the second isolation pattern:
+```
+ray_available_clusters()
+if i == 0:
+    try:
+        ray.init()
+        print('Main')
+        print('Getting resources')
+        checked_collective, checked_resources, checked_nodes = ray_check_cluster(
+            cluster_resources = ray.available_resources(),
+            cluster_nodes = ray.nodes()
+        )
+    except Exception as e:
+        print('Failed to execute code at Main')
+        print(e)
+else:
+    remote_url = 'ray://' + cluster_urls[i-1]
+    try: 
+        remote_client = ray.init(
+            address = remote_url, 
+            allow_multiple = True
+        )
+        try: 
+            with remote_client:
+                print(remote_url)
+                print('Getting resources')
+                checked_collective, checked_resources, checked_nodes = ray_check_cluster(
+                    cluster_resources = ray.available_resources(),
+                    cluster_nodes = ray.nodes()
+                )
+        except Exception as e:
+            print('Failed to execute code at ' + str(remote_url))
+            print(e)
+        remote_client.disconnect()
+    except Exception as e:
+        print('Failed to connect to ' + str(remote_url))
+        print(e)
+
+process_cluster_files()
+if cluster == '0':
+    try:
+        print('Main')
+        print('Running cluster tasks')
+    
+        main_stat_summaries = file_processing(
+            process_parameters = process_parameters,
+            data_parameters = data_parameters,
+            files = files
+        )
+        
+        cluster_data[cluster] = {
+            'url': 'Main',
+            'data': main_stat_summaries
+        }
+    
+    except Exception as e:
+        print('Failed to execute code at main cluster')
+        print(e)
+else:
+    remote_url = 'ray://' + cluster_urls[cluster_index]
+    try:
+        remote_client = ray.init(
+            address = remote_url, 
+            allow_multiple = True,
+            runtime_env = {
+                'pip': [
+                    'numpy'
+                ]
+            }
+        )
+        try: 
+            with remote_client:
+                print(remote_url)
+                print('Running file processing')
+    
+                remote_stat_summaries = file_processing(
+                    process_parameters = process_parameters,
+                    data_parameters = data_parameters,
+                    files = files
+                )
+                cluster_data[cluster] = {
+                    'url': remote_url,
+                    'data': remote_stat_summaries
+                }
+                
+        except Exception as e:
+            print('Failed to execute code at ' + str(remote_url))
+            print(e)
+        remote_client.disconnect()
+    except Exception as e:
+        print('Failed to connect to ' + str(remote_url))
+        print(e)
+```
+Here we put all cluster interactions inside try-excepts to ensure that job can still go on and that all clients are disconnected properly. Be aware that the reason ray.init() is done in the first function is for gaining client context, which isn't necessery in the second function due to remote tasks doing it already. The third isolation pattern is:
+```
+def file_processing(
+    process_parameters: any,
+    data_parameters: any,
+    files: any
+) -> any:
+    try:
+        worker_number = process_parameters['worker-number']
+        actor_number = process_parameters['actor-number']
+        
+        print('Dividing cluster files for ' + str(worker_number) + ' workers')
+        file_batches = division_data_round_robin(
+            target_list = files, 
+            number = worker_number
+        )
+
+        file_batch_refs = []
+        for file_batch in file_batches:
+            file_batch_refs.append(ray.put(file_batch))
+        
+        print('Creating ' + str(actor_number) + ' provider actors')
+        actor_refs = []
+        for i in range(0, actor_number):
+            actor_refs.append(Provider.remote())
+
+        print('Starting preprocess tasks')
+        task_1_refs = [] 
+        worker_index = 1
+        actor_index = 0
+        for file_batch_ref in file_batch_refs:
+            actor_ref = actor_refs[actor_index]
+            task_1_refs.append(preprocess.remote(
+                worker_index = worker_index,
+                actor_index = actor_index + 1,
+                actor_ref = actor_ref,
+                data_parameters = data_parameters,
+                file_tuples = file_batch_ref
+            ))
+            worker_index += 1
+            actor_index = (actor_index + 1) % actor_number
+
+        print('Waiting preprocess tasks and starting calculator tasks')
+        task_2_refs = []
+        worker_index = 1
+        actor_index = 0
+        while len(task_1_refs):
+            done_task_1_refs, task_1_refs = ray.wait(task_1_refs)
+            for output_ref in done_task_1_refs:
+                actor_ref = actor_refs[actor_index]
+                task_2_refs.append(collector.remote(
+                    worker_index = worker_index,
+                    actor_index = actor_index + 1,
+                    actor_ref = actor_ref,
+                    data_parameters = data_parameters,
+                    batch_stats = output_ref
+                ))
+                worker_index += 1
+                actor_index = (actor_index + 1) % actor_number
+
+        print('Waiting calculator tasks')
+        stat_summaries = []
+        while len(task_2_refs):
+            done_task_2_refs, task_2_refs = ray.wait(task_2_refs)
+            for output_ref in done_task_2_refs:
+                stat_summaries.extend(ray.get(output_ref))
+        
+        return stat_summaries
+    except Exception as e:
+        print('Check processing cluster tasks error')
+        print(e)
+        return None
+```
+This is made to ensure that all clusters do the same jobs by putting worker and actor setup inside the same function. Be aware that since the code is doing reconnections, we cannot use objects created by disconnected clients, which is why all the data is gathered into the main cluster. This leads us to the final isolation pattern:
+```
+parallel_clustering()
+try:
+    serve.start(
+        http_options = {
+            'host':'0.0.0.0',
+            'port': 8000
+        }
+    )
+    
+    print('Starting Serve')
+    serve.run(
+        Requests.bind(
+            data_ref = cluster_data_ref
+        ), 
+        name = 'requests', 
+        route_prefix = '/'
+    )
+    
+    print('Waiting for interactions')
+    time.sleep(40)    
+    
+    print('Stopping Serve')
+    serve.shutdown()  
+    return True
+except Exception as e:
+    print('Parallel clustering error')
+    print(e)
+    return False
+```
+Here we put all the collected data into a serve deployment run in the main cluster. This is due to ray.init() not having trivial ways of handling separated serve deployments in other clusters, which is why we instead only use the main cluster for getting the output. This is one of the main weakness of this approach, since unless you are ready put time to understand how ray.init() works, it is way easier to simply use JobSubmissionClient in either Jupyter Notebook, Kubeflow pipelines or Airflow with the help of a global storage to send jobs and store all the data into the same place to ensure working serve deployments. The reason for showing this approach is future proofing (Ray developers might fix problems), coding variety and faster multiclustering development, which enabled us to test and implement a load balance based input generation shown in the first cluster pattern:
+```
+def division_cluster_weights(
+    process_parameters: any,
+    available_clusters: any
+) -> any:
+    resource_weights = process_parameters['resource-weights']
+
+    clusters = {}
+    for key in available_clusters:
+        if key.isnumeric():
+            if not key in clusters:
+                clusters[key] = {}
+            for resource in resource_weights.keys():
+                amount = 0
+                if resource in available_clusters[key]['resources']:
+                    amount = available_clusters[key]['resources'][resource]
+                clusters[key][resource] = amount
+            
+    resource_names = list(resource_weights.keys())
+    resource_matrix = np.array([
+        [clusters[c][r] for r in resource_names]
+        for c in clusters
+    ], dtype=float)
+
+    max_values = resource_matrix.max(axis=0)
+    normalized = resource_matrix / max_values
+    weighted_scores = normalized @ np.array(list(resource_weights.values()))
+    total = weighted_scores.sum()
+    final_weights = weighted_scores / total
+    return dict(zip(clusters.keys(), final_weights))
+```
+This function uses the given resource weights and available cluster resources to calculate cluster weights for later use, which leads us to the final cluster pattern:
+```
+def division_load_balanced_cluster_round_robin(
+    target_list: any,
+    cluster_weights: any
+) -> any:
+    clusters = list(cluster_weights.keys())
+    assigned = {c: [] for c in clusters}
+    cluster_load = {c: 0 for c in clusters}
+    weighted_items = sorted(target_list, key = lambda x: (x[-2], x[-1]), reverse = True)
+    capacities = {c: cluster_weights[c] for c in clusters}
+    for item_tuple in weighted_items:
+        target = min(
+            clusters,
+            key=lambda c: cluster_load[c] / capacities[c]
+        )
+        assigned[target].append(item_tuple)
+        cluster_load[target] += item_tuple[-1]
+    return assigned
+```
+This functions uses the given weights to divide the generated file tuples based on their heaviness between the clusters. With this we finally have the necessery basic understanding of Ray for using it as the main computing framework in the integration with is pros and cons. We also went through basic parallelism methods with naive and weigthed round robin variants for dividing data. Be aware that from this point forward we will no longer use ray.init() outside of small scale tests to ensure the maturity, abstraction and interoperability of our development workflows for the last two parts. Instead we will however use the shown potential of ray.init() centralization to implement a working substituate for ourselves through local-cloud-hpc integrated workflows and pipelines.
