@@ -11,6 +11,8 @@ distributed computing systems for MLOps systems.
 - [Kubernetes in Docker](#Kubernetes-In-Docker)
 - [Helm Deployment](#Helm-Deployment)
 - [YAML Deployment](#YAML-Deployment)
+- [Application Deployment](#Application-Deployment)
+- [Istio Networking](#Istio-Networking)
 
 ## SSH Config
 
@@ -1190,3 +1192,1351 @@ kubectl get pods -n airflow
 kubectl logs airflow-dag-processor-(id) -n airflow
 ```
 
+## Application Deployment
+
+### Useful material
+
+- [Redis](https://github.com/redis/redis)
+- [Redis Docker Image](https://hub.docker.com/layers/library/redis/8.2.1/images/sha256-94d44595f2835e84a865267cff718799849c4feae6bec51794c12ed3fe4fc28b)
+- [Minio](https://github.com/minio/minio)
+- [Minio Docker Image](https://hub.docker.com/layers/minio/minio/RELEASE.2025-09-07T16-13-09Z/images/sha256-a1a8bd4ac40ad7881a245bab97323e18f971e4d4cba2c2007ec1bedd21cbaba2)
+- [PostgreSQL Database Management System](https://github.com/postgres/postgres)
+- [Postgres Docker Image](https://hub.docker.com/layers/library/postgres/18.0/images/sha256-631eaa51f4ddfafb7494ae4bddb1adc6c54866df0340d94b20d6866c20b20d35)
+- [MongoDB](https://github.com/mongodb/mongo)
+- [MongoDB Docker Image](https://hub.docker.com/layers/library/mongo/8.0.14/images/sha256-0de701cce332bf7c3b409d91cf2b725c8604c9294ffd00f6329727962105a053)
+- [Mongo Express](https://github.com/mongo-express/mongo-express)
+- [Qdrant](https://github.com/qdrant/qdrant)
+- [Qdrant Docker Image](https://hub.docker.com/layers/qdrant/qdrant/v1.15/images/sha256-53d8c371bc3ae99e4353897ee594bfcfab7f72c4925f74471ebb34d9f6103a3e)
+- [Neo4j Graph Database](https://github.com/neo4j/neo4j)
+- [Neo4j Docker Image](https://hub.docker.com/layers/library/neo4j/5.26.12-community/images/sha256-a6a4c409d35939597968a5dea1768c92db1787cd6c25614349be5c782ee99e35)
+- [Kubernetes ConfiMaps](https://kubernetes.io/docs/concepts/configuration/configmap/)
+- [Kubernetes Secrets](https://kubernetes.io/docs/concepts/configuration/secret/)
+- [Declarative Management of Kubernetes Objects Using Kustomize](https://kubernetes.io/docs/tasks/manage-kubernetes-objects/kustomization/)
+- [Kubernetes Persistent Volumes](https://kubernetes.io/docs/concepts/storage/persistent-volumes/)
+- [Ollama](https://github.com/ollama/ollama)
+- [Open WebUI](https://github.com/open-webui/open-webui)
+- [Ollama Docker Image](https://hub.docker.com/layers/ollama/ollama/0.12.3/images/sha256-36ccf1b4c161179a198a19e897aa0a1acd54cd5eeb6ab99c80f2ef50ba7fa106)
+- [Ollama Search](https://ollama.com/search)
+
+### Info
+
+For our use case we now know all the basic things we need to deploy applications into OSS. As a demonstration we will now add the following applications into OSS:
+
+   - Cache storage with redis
+   - Object storage with MinIO
+   - Relational storage with PostgreSQL
+   - Structured storage with MongoDB
+   - Vector storage with Qdrant
+   - Graph storage with Neo4j
+   - Large language model inference with Ollama
+   - Large language model interface with WebUi
+
+To begin go check the deployments/storage. If you open the folders, you see the following new file names:
+
+
+   - Config.env
+   - Secret.env
+   - Config
+   - PVC
+
+The three first file names related to Kubernetes Config object that enables us to manage non sensitive and sensitive configuration data by keeping it separate from deployment, which enables its easier modification as needed. In this case these files handle user secrets in MinIO and PostgreSQL by using .env files to generate configMap and Secrets as shown in the kustomization.yaml
+
+```
+configMapGenerator:
+- name: storage-configmap
+  envs:
+    - config.env
+
+secretGenerator:
+- name: storage-secrets
+  envs:
+    - secret.env
+```
+
+These are then utilized in the deployments in the following way:
+
+```
+minio-deployment.yaml
+- name: MINIO_ROOT_USER
+  valueFrom:
+    configMapKeyRef:
+      name: storage-configmap
+      key: MINIO_ROOT_USER
+- name: MINIO_ROOT_PASSWORD
+  valueFrom:
+    secretKeyRef:
+      name: storage-secrets
+      key: MINIO_ROOT_PASSWORD
+
+postgres-deployment.yaml
+env:
+- name: POSTGRES_PASSWORD 
+  valueFrom:
+    secretKeyRef:
+      name: storage-secrets
+      key: DB_PASSWORD
+```
+
+In the case of postgresql we also a specified config map to set database name and user
+
+```
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: postgres-config
+  labels:
+    app: postgres
+data:
+  POSTGRES_DB: "relationaldb"
+  POSTGRES_USER: "relational"
+```
+
+This is used in the following way:
+
+```
+envFrom:
+- configMapRef:
+    name: postgres-config
+```
+
+The other necessery object is persistent volumes (PVC) that provide requested storage space in the disk the cluster has access to, which in our case is the mounted openstack volume of 500G. PVCs should be provided to databases that require a permanent placement for data, which is why we don't provide Redis a PVC, but give it to Neo4j, MinIO, Postgres, Mongo and Qdrant. Be aware that PVCs are destroyed when the cluster is deleted, which is why one should be careful with OSS deletion or backup data in global storage such as Allas. We define a PVC object in the following way for MongoDB:
+
+```
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: mongo-data-pvc
+  labels:
+    app: mongo-server
+spec:
+ accessModes:
+   - ReadWriteOnce
+ resources:
+   requests:
+      storage: 5Gi
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: mongo-log-pvc
+  labels:
+    app: mongo-server
+spec:
+ accessModes:
+   - ReadWriteOnce
+ resources:
+   requests:
+      storage: 5Gi
+```
+
+Here we define PVCs both for data and the logs, which we then give to deployment in the following way:
+
+```
+spec:
+  containers:
+    volumeMounts:
+    - name: mongo-data
+      mountPath: /data/db/
+    - name: mongo-log
+      mountPath: /var/log/mongodb/
+  volumes:
+  - name: mongo-data
+    persistentVolumeClaim:
+      claimName: mongo-data-pvc
+  - name: mongo-log
+    persistentVolumeClaim:
+      claimName: mongo-log-pvc
+```
+
+With everything covered, we can now deploy these storages with kustomize:
+
+```
+kubectl apply -k storage
+```
+
+If you check their pod logs, you should see the following rows:
+
+```
+# Redis
+1:M 01 Oct 2025 09:54:24.878 * Server initialized
+1:M 01 Oct 2025 09:54:24.878 * Ready to accept connections tcp
+
+# Minio
+API: http://10.244.0.111:9000  http://127.0.0.1:9000 
+WebUI: http://10.244.0.111:9001 http://127.0.0.1:9001    
+Docs: https://docs.min.io
+WARN: Detected default credentials 'minioadmin:minioadmin', we recommend that you change these values with 'MINIO_ROOT_USER' and 'MINIO_ROOT_PASSWORD' environment variables
+
+# PostgreSQL
+2025-10-01 09:58:54.175 UTC [1] LOG:  starting PostgreSQL 17.2 (Debian 17.2-1.pgdg120+1) on x86_64-pc-linux-gnu, compiled by gcc (Debian 12.2.0-14) 12.2.0, 64-bit
+2025-10-01 09:58:54.175 UTC [1] LOG:  listening on IPv4 address "0.0.0.0", port 5432
+2025-10-01 09:58:54.175 UTC [1] LOG:  listening on IPv6 address "::", port 5432
+2025-10-01 09:58:54.182 UTC [1] LOG:  listening on Unix socket "/var/run/postgresql/.s.PGSQL.5432"
+2025-10-01 09:58:54.210 UTC [71] LOG:  database system was shut down at 2025-10-01 09:58:54 UTC
+2025-10-01 09:58:54.220 UTC [1] LOG:  database system is ready to accept connections
+
+# MongoDB
+MongoDB init process complete; ready for start up.
+
+# Express
+No custom config.js found, loading config.default.js
+Welcome to mongo-express 1.0.2
+------------------------
+Mongo Express server listening at http://0.0.0.0:8081
+Server is open to allow connections from anyone (0.0.0.0)
+
+# Qdrant
+           _                 _    
+  __ _  __| |_ __ __ _ _ __ | |_  
+ / _` |/ _` | '__/ _` | '_ \| __| 
+| (_| | (_| | | | (_| | | | | |_  
+ \__, |\__,_|_|  \__,_|_| |_|\__| 
+    |_|                           
+
+Version: 1.15.5, build: 48203e41
+Access web UI at http://localhost:6333/dashboard
+2025-10-01T09:55:51.772871Z  INFO storage::content_manager::consensus::persistent: Initializing new raft state at ./storage/raft_state.json
+2025-10-01T09:55:52.624224Z  INFO qdrant: Distributed mode disabled
+2025-10-01T09:55:52.624432Z  INFO qdrant: Telemetry reporting enabled, id: 663d9a7b-dc14-4b37-9b98-71ef70b33d82
+
+# Neo4j
+2025-10-01 09:56:08.454+0000 INFO  ======== Neo4j 5.26.12 ========
+2025-10-01 09:56:17.095+0000 INFO  Anonymous Usage Data is being sent to Neo4j, see https://neo4j.com/docs/usage-data/
+2025-10-01 09:56:17.307+0000 INFO  Bolt enabled on 0.0.0.0:7687.
+2025-10-01 09:56:19.704+0000 INFO  HTTP enabled on 0.0.0.0:7474.
+2025-10-01 09:56:19.705+0000 INFO  Remote interface available at http://localhost:7474/
+2025-10-01 09:56:19.708+0000 INFO  id: AD6E1B0E52FDF7233306135CB8D07FFE1AFB0ED9C02AB2BC34721DE6B976DF8F
+2025-10-01 09:56:19.708+0000 INFO  name: system
+2025-10-01 09:56:19.709+0000 INFO  creationDate: 2025-10-01T09:56:12.868Z
+2025-10-01 09:56:19.709+0000 INFO  Started.
+```
+
+We can now create local forward to the dashboards of MinIO, Mongo, Qdrant and Neo4j by doing the following:
+
+```
+# MinIo backend
+ssh -L 9100:localhost:9100 cpouta
+kubectl port-forward svc/minio-service 9100:9100 -n storage
+
+# MinIO frontend
+ssh -L 9101:localhost:9101 cpouta
+kubectl port-forward svc/minio-service 9101:9101 -n storage (user is minioadmin and password is minioadmin)
+
+# Mongo frontend
+ssh -L 7200:localhost:7200 cpouta
+kubectl port-forward svc/express-service 7200:7200 -n storage
+http://localhost:7200 (user is express123 and password is express456)
+
+# Mongo backend
+ssh -L 27017:localhost:27017 cpouta
+kubectl port-forward svc/mongo-service 27017:27017 -n storage
+http://localhost:27017
+
+# Qdrant
+ssh -L 7201:localhost:7201 cpouta
+kubectl port-forward svc/qdrant-service 7201:7201 -n storage
+http://localhost:7201/dashboard (API key is qdrant_key)
+
+# Neo4j frontend
+ssh -L 7474:localhost:7474 cpouta
+kubectl port-forward svc/neo4j-service 7474:7474 -n storage
+http://localhost:7474 (user is neo4j, password is password)
+
+# Neo4j backend (required for interactions)
+ssh -L 7687:localhost:7687 cpouta
+kubectl port-forward svc/neo4j-service 7687:7687 -n storage
+http://localhost:7687
+```
+
+We can also interact with redis and postgresql with:
+
+```
+# Redis
+ssh -L 6379:localhost:6379 cpouta
+kubectl port-forward svc/redis-service 6379:6379 -n storage
+
+# Postgresql
+ssh -L 5532:localhost:5532 cpouta
+kubectl port-forward svc/postgres-service 5532:5532 -n storage
+```
+
+All of these backends can now be interacted by using suitable Python clients. This enables near production enviroment development without creating these same containers in Docker Compose that we will discuss in future parts. Now, we will deploy Ollama and WebUI to enable interactive testing of large language models, which you can find at deployments/language. There is nothing new to note besides the large PVC claims made by Ollama to store models and nvshare request. Based on tests the CPouta Tesla P100 16GB can handle models smaller than 20B with some model exceptions. Most of these models vary in 4GB-15GB sizes, which is why we need 40GB to enable swapping between models. In the case of GPU access we will use the mentioned request previousily mentioned in the Ray Helm example to give Ollama access to GPU. If you don't have a GPU, you can simply remove the request to force Ollama into CPU mode. We can again deploy these with:
+
+```
+kubectl apply -k language
+```
+
+If you check the pod logs, you should get the following rows:
+
+```
+# Ollama
+[NVSHARE][INFO]: Successfully initialized nvshare GPU
+[NVSHARE][INFO]: Client ID = 188e3c163b8cfd4f
+time=2025-10-01T11:18:18.978Z level=INFO source=types.go:131 msg="inference compute" id=GPU-7d14824c-991c-23c3-7303-1ef28991f48e library=cuda variant=v12 compute=6.0 driver=12.2 name="Tesla P100-PCIE-16GB" total="15.9 GiB" available="14.4 GiB"
+time=2025-10-01T11:18:18.978Z level=INFO source=routes.go:1569 msg="entering low vram mode" "total vram"="15.9 GiB" threshold="20.0 GiB"
+
+# Webui
+
+ ██████╗ ██████╗ ███████╗███╗   ██╗    ██╗    ██╗███████╗██████╗ ██╗   ██╗██╗
+██╔═══██╗██╔══██╗██╔════╝████╗  ██║    ██║    ██║██╔════╝██╔══██╗██║   ██║██║
+██║   ██║██████╔╝█████╗  ██╔██╗ ██║    ██║ █╗ ██║█████╗  ██████╔╝██║   ██║██║
+██║   ██║██╔═══╝ ██╔══╝  ██║╚██╗██║    ██║███╗██║██╔══╝  ██╔══██╗██║   ██║██║
+╚██████╔╝██║     ███████╗██║ ╚████║    ╚███╔███╔╝███████╗██████╔╝╚██████╔╝██║
+ ╚═════╝ ╚═╝     ╚══════╝╚═╝  ╚═══╝     ╚══╝╚══╝ ╚══════╝╚═════╝  ╚═════╝ ╚═╝
+
+
+v0.6.32 - building the best AI user interface.
+
+https://github.com/open-webui/open-webui
+
+Fetching 30 files: 100%|██████████| 30/30 [00:17<00:00,  1.72it/s]
+INFO:     Started server process [1]
+INFO:     Waiting for application startup.
+2025-10-01 11:20:11.230 | INFO     | open_webui.utils.logger:start_logger:162 - GLOBAL_LOG_LEVEL: INFO
+2025-10-01 11:20:11.230 | INFO     | open_webui.main:lifespan:553 - Installing external dependencies of functions and tools...
+2025-10-01 11:20:11.247 | INFO     | open_webui.utils.plugin:install_frontmatter_requirements:283 - No requirements found in frontmatter.
+```
+
+You can now localforward these with:
+
+```
+# Ollama
+ssh -L 7100:localhost:7100 cpouta
+kubectl port-forward svc/ollama-service 7100:7100 -n language
+
+# Webui
+ssh -L 7101:localhost:7101 cpouta
+kubectl port-forward svc/webui-service 7101:7101 -n language
+```
+
+When you open http://localhost:7101/ to get into webui, you can start using models with the following clicks
+
+   - Top right gear
+   - Menu admin panel
+   - Top settings
+   - Models
+   - Click download top right
+   - Go to https://ollama.com/search
+   - Get suitable model such as mistral:7b
+   - Write it into pull a model
+   - Wait for it to download
+   - When its downloaded, go to new chat
+   - Click top left to select a model
+   - Select mistral
+   - Write a prompt and press enter
+
+For example, if you write 'can you shortly explain python', you might get the following answer:
+
+```
+Python is a high-level, interpreted programming language that was created by Guido van Rossum and first released in 1991. It's known for its clean syntax, readability, and versatility, making it a popular choice among both beginners and experts in various domains such as web development, data analysis, machine learning, artificial intelligence, and scientific computing.
+
+Python is an interpreted language, meaning that the code is not compiled into machine code before execution like some other languages (e.g., C++ or Java). Instead, Python's interpreter translates the code at runtime, which makes it quicker to develop and test applications compared to compiled languages.
+
+Some key features of Python include:
+
+1. Simple syntax: Python has a readable syntax with fewer keywords and fewer lines of code compared to other programming languages. This allows beginners to quickly learn the basics.
+
+2. Large standard library: Python comes with a vast built-in set of modules that handle common programming tasks, such as networking, file I/O, string operations, and more.
+
+3. Extensibility: Python can be extended with C or C++ code for better performance in demanding applications.
+
+4. Open-source and cross-platform: Python is open-source, meaning that its source code is freely available to everyone. It also runs on various platforms including Windows, macOS, Linux, and others.
+
+5. Dynamic typing and automatic memory management: In Python, variables don't have specific data types until they are assigned values during runtime. Additionally, Python takes care of managing memory for you, reducing the risk of memory leaks and simplifying development tasks.
+
+6. Strong support for object-oriented programming (OOP): Python supports OOP principles like inheritance, encapsulation, polymorphism, and abstract classes, making it suitable for developing complex applications.
+
+7. Large community: Python has a large, active community of developers who contribute to the language's growth by creating libraries, frameworks, and tools that help make development more efficient and enjoyable.
+
+Python is an essential tool in many industries, including web development (Django, Flask, Pyramid), data science (NumPy, Pandas, Scikit-learn, TensorFlow, Keras), artificial intelligence (TensorFlow, PyTorch, OpenCV), automation (Robot Framework), and scientific computing (SciPy, Matplotlib).
+```
+
+This might take at first few second to minute as GPU warms up. You can check the speed by using webui statistics shown under the answer circle with 'i'. Be aware that different models can handle very differently especially in mininum VRAM consumption. This you can apporximate by using nvidia-smi during generation, which gives the following for mistral 7b:
+
+```
++---------------------------------------------------------------------------------------+
+| NVIDIA-SMI 535.247.01             Driver Version: 535.247.01   CUDA Version: 12.2     |
+|-----------------------------------------+----------------------+----------------------+
+| GPU  Name                 Persistence-M | Bus-Id        Disp.A | Volatile Uncorr. ECC |
+| Fan  Temp   Perf          Pwr:Usage/Cap |         Memory-Usage | GPU-Util  Compute M. |
+|                                         |                      |               MIG M. |
+|=========================================+======================+======================|
+|   0  Tesla P100-PCIE-16GB           Off | 00000000:00:06.0 Off |                    0 |
+| N/A   30C    P0             162W / 250W |   5108MiB / 16384MiB |     96%      Default |
+|                                         |                      |                  N/A |
++-----------------------------------------+----------------------+----------------------+
+                                                                                         
++---------------------------------------------------------------------------------------+
+| Processes:                                                                            |
+|  GPU   GI   CI        PID   Type   Process name                            GPU Memory |
+|        ID   ID                                                             Usage      |
+|=======================================================================================|
+|    0   N/A  N/A   1417505      C   /usr/bin/ollama                             370MiB |
++---------------------------------------------------------------------------------------+
+```
+
+Here we see that this generation took around 5.1GB of VRAM to complete. Without going into details, this amount increases as the prompt and answer length increase. This is difficult to predict, which is why large models usually fail to run due to the token requirements set to VRAM. We will go into further details on future parts.
+
+## Istio Networking
+
+### Useful material
+
+- [Istio](https://istio.io/)
+- [Kiali](https://kiali.io/)
+- [Kiali Quick Start](https://kiali.io/docs/installation/quick-start/)
+- [Istio Gateway](https://istio.io/latest/docs/reference/config/networking/gateway/)
+- [Istio Ingress Gateways](https://istio.io/latest/docs/tasks/traffic-management/ingress/ingress-control/)
+- [Istio Virtual Service](https://istio.io/latest/docs/reference/config/networking/virtual-service/)
+- [The /etc/hosts file](https://tldp.org/LDP/solrhe/Securing-Optimizing-Linux-RH-Edition-v1.3/chap9sec95.html)
+- [Curl tutorial](https://curl.se/docs/tutorial.html)
+
+### Info
+
+As we have seen in the previous section, there is a quite a lot of manual actions required to form connections into Kubernetes services. In order to remove the need for local forwards for service access, we will use Istio service mesh to handle outside connections, Kiali to handle network debugging and Openstack security groups to handle restricted access. To begin, we first need to modify OSS istio in the following way:
+
+```
+# Get values
+kubectl get deployment istiod -n istio-system -o yaml > istiod.yaml
+
+# Modify values
+nano istiod.yaml
+set ENABLE_DEBUG_ON_HTTP to "true"
+
+# Apply values
+kubectl apply -f istiod.yaml
+```
+
+When the istio-system is running again, we can now deploy Kiali by using deployments/networking/kiali. Kiali is a dashboard console for Istio that enables to easily see what is happening in the network. Deploy it with:
+
+```
+cd deployments/networking
+kubectl apply -k kiali
+```
+
+The created pod should give the following logs:
+
+```
+# Check kiali
+kubectl get pods -n istio-system
+
+kiali
+c4jmd -n istio-system
+{"level":"info","time":"2025-10-01T12:23:28Z","message":"Adding a RegistryRefreshHandler"}
+2025-10-01T12:23:28Z INF Kiali: Version: v1.76.1, Commit: 0f96891475ab41b10821ae8e1850572fbcd1505f, Go: 1.20.10
+2025-10-01T12:23:28Z INF Using authentication strategy [anonymous]
+2025-10-01T12:23:28Z WRN Kiali auth strategy is configured for anonymous access - users will not be authenticated.
+2025-10-01T12:23:28Z INF Some validation errors will be ignored [KIA1301]. If these errors do occur, they will still be logged. If you think the validation errors you see are incorrect, please report them to the Kiali team if you have not done so already and provide the details of your scenario. This will keep Kiali validations strong for the whole community.
+2025-10-01T12:23:28Z INF Initializing Kiali Cache
+2025-10-01T12:23:28Z INF Adding a RegistryRefreshHandler
+2025-10-01T12:23:28Z INF [Kiali Cache] Waiting for cluster-scoped cache to sync
+2025-10-01T12:23:28Z INF [Kiali Cache] Started
+2025-10-01T12:23:28Z INF [Kiali Cache] Kube cache is active for cluster: [Kubernetes]
+2025-10-01T12:23:28Z INF Server endpoint will start at [:20001/kiali]
+2025-10-01T12:23:28Z INF Server endpoint will serve static content from [/opt/kiali/console]
+2025-10-01T12:23:28Z INF Starting Metrics Server on [:9090]
+```
+
+You can get access to Kiali with:
+
+```
+ssh -L 20001:localhost:20001 cpouta
+kubectl port-forward svc/kiali 20001:20001 -n istio-system
+```
+
+Check the dashboard in http://localhost:20001/. Be aware that we can debug a lot of problems with Istio and Kiali using pod logs, which you can get with:
+
+```
+kubectl logs istiod-(id) -n istio-system
+kubectl logs kiali-(id) -n istio-system
+```
+
+We now have everything we need to setup gateways and virtualservices. Gateways provide a entrypoint throug the Kind extraportmappings to the OSS cluster, while virtualservices route the traffic into specific services. We can check all gateways and virtualservices with:
+
+```
+kubectl get gateways -A
+kubectl get virtualservices -A
+```
+
+These should give the following:
+
+```
+gateways
+NAMESPACE         NAME                    AGE
+istio-system      cluster-local-gateway   2d6h
+istio-system      istio-ingressgateway    2d6h
+knative-serving   knative-local-gateway   2d6h
+kubeflow          kubeflow-gateway        2d6h
+
+virtualservices 
+NAMESPACE   NAME     GATEWAYS                        HOSTS   AGE
+mlflow      mlflow   ["kubeflow/kubeflow-gateway"]   ["*"]   2d6h
+```
+
+What we first need to do is to map the wanted ports into a existing istio service, which in this case is istio-ingressgateway. We will modify it with the following:
+
+```
+kubectl get svc istio-ingressgateway -n istio-system -o yaml > study-istio-ingressgateway.yaml
+nano study-istio-ingressgateway.yaml
+```
+
+Modify this YAML by adding the following:
+
+```
+ports:
+  - name: status-port
+    nodePort: 30900
+    port: 15021
+    protocol: TCP
+    targetPort: 15021
+  - name: http2
+    nodePort: 30901
+    port: 80
+    protocol: TCP
+    targetPort: 8080
+  - name: https
+    nodePort: 30902
+    port: 443
+    protocol: TCP
+    targetPort: 8443
+  - name: http-dashboards
+    nodePort: 31001
+    port: 100
+    protocol: TCP
+    targetPort: 9501 
+  - name: tcp-redis 
+    nodePort: 31002
+    port: 200
+    protocol: TCP
+    targetPort: 9502
+  - name: tcp-minio
+    nodePort: 31003
+    port: 201
+    protocol: TCP
+    targetPort: 9503
+  - name: tcp-postgres
+    nodePort: 31004
+    port: 202 
+    protocol: TCP
+    targetPort: 9504
+  - name: tcp-mongo
+    nodePort: 31005
+    port: 203
+    protocol: TCP
+    targetPort: 9505
+  - name: tcp-qdrant
+    nodePort: 31006
+    port: 204
+    protocol: TCP
+    targetPort: 9006
+  - name: tcp-neo4j
+    nodePort: 31007
+    port: 205
+    protocol: TCP
+    targetPort: 9007
+selector:
+  app: istio-ingressgateway
+  istio: ingressgateway
+sessionAffinity: None
+type: NodePort
+```
+
+After saving this, apply it with
+
+```
+kubectl apply -f study-istio-ingressgateway.yaml
+```
+
+Now we can create necessery gateways and virtual services. The gateway and virtualservice template for dashboards are:
+
+```
+# Gateway
+apiVersion: networking.istio.io/v1beta1
+kind: Gateway
+metadata:
+  name: dashboard-gateway-1
+spec:
+  selector:
+    app: istio-ingressgateway
+    istio: ingressgateway
+  servers:
+  - port:
+      name: http
+      number: 100
+      protocol: HTTP
+    hosts:
+    - "kubeflow.oss"
+    - "kubeflow.minio.oss"
+    - "mlflow.oss"
+    - "mlflow.minio.oss"
+    - "prometheus.oss"
+    - "grafana.oss"
+    - "forwarder.frontend.oss"
+    - "forwarder.monitor.oss"
+    - "forwarder.airflow.oss"
+    - "kiali.oss"
+    - "minio.oss"
+    - "mongo.oss"
+    - "qdrant.oss"
+    - "neo4j.oss"
+    - "ollama.oss"
+    - "webui.oss"
+    
+# Virtual service
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: (name)-virtualservice
+spec:
+  hosts:
+  - "(gateway-host)"
+  gateways:
+  - dashboard-gateway-1
+  http:
+  - route:
+    - destination:
+        host: (service-name).(service-namespace).svc.cluster.local
+        port:
+          number: (service-port)
+```
+
+In these the critical things are matching gateway-host, service-name, service-namespace and service-port. For example, in the case of Kiali these are:
+
+   - gateway-host = kiali-oss
+   - service-name = kiali
+   - service-namespace = istio-system
+   - service-port = 20001
+
+These have already been provided in deployments/networking/http, which you can deploy with:
+
+```
+kubectl apply -k http
+```
+
+You can check these with:
+
+```
+kubectl get gateways -A
+kubectl get virtualservices -A
+```
+
+To test these, we can use curl on the host machine with the following command:
+
+```
+curl -v -H "Host: (host-name)" http://localhost:7001
+```
+
+You can see these curls in logs:
+
+```
+kubectl logs istio-ingressgateway-(id) -n istio-system
+```
+
+By using both of these on each host-name should give some of the following:
+
+```
+# kubeflow.oss
+# curl -v -H "Host: kubeflow.oss" http://localhost:7001
+*   Trying 127.0.0.1:7001...
+* Connected to localhost (127.0.0.1) port 7001 (#0)
+> GET / HTTP/1.1
+> Host: kubeflow.oss
+> User-Agent: curl/7.81.0
+> Accept: */*
+> 
+* Mark bundle as not supporting multiuse
+< HTTP/1.1 200 OK
+< x-powered-by: Express
+< content-type: text/html; charset=utf-8
+< content-length: 670
+< etag: W/"29e-J4oJkifJqN5fxHZn6TdXdlThLtw"
+< date: Thu, 02 Oct 2025 09:05:20 GMT
+< x-envoy-upstream-service-time: 3
+< server: istio-envoy
+# logs
+[2025-10-02T09:07:57.462Z] "GET / HTTP/1.1" 200 - via_upstream - "-" 0 670 2 1 "10.244.0.1" "curl/7.81.0" "e610ece0-b893-4f5b-9938-0d0532a7a71b" "kubeflow.oss" "10.244.0.15:3000" outbound|80||ml-pipeline-ui.kubeflow.svc.cluster.local 10.244.0.44:33098 10.244.0.44:9501 10.244.0.1:13975 - -
+
+# kubeflow.minio.oss
+# curl -v -H "Host: kubeflow.minio.oss" http://localhost:7001
+*   Trying 127.0.0.1:7001...
+* Connected to localhost (127.0.0.1) port 7001 (#0)
+> GET / HTTP/1.1
+> Host: kubeflow.minio.oss
+> User-Agent: curl/7.81.0
+> Accept: */*
+> 
+* Mark bundle as not supporting multiuse
+< HTTP/1.1 403 Forbidden
+< accept-ranges: bytes
+< content-length: 226
+< content-security-policy: block-all-mixed-content
+< content-type: application/xml
+< server: istio-envoy
+< vary: Origin
+< x-amz-request-id: 186AA21040701A82
+< x-xss-protection: 1; mode=block
+< date: Thu, 02 Oct 2025 09:19:55 GMT
+< x-envoy-upstream-service-time: 2
+# logs
+[2025-10-02T09:19:55.123Z] "GET / HTTP/1.1" 403 - via_upstream - "-" 0 226 3 2 "10.244.0.1" "curl/7.81.0" "6da7001b-8773-4c44-841e-0e0cc0d9f2b8" "kubeflow.minio.oss" "10.244.0.35:9000" outbound|9000||minio-service.kubeflow.svc.cluster.local 10.244.0.44:57052 10.244.0.44:9501 10.244.0.1:22764 - -
+
+# mlflow.oss
+# curl -v -H "Host: mlflow.oss" http://localhost:7001
+*   Trying 127.0.0.1:7001...
+* Connected to localhost (127.0.0.1) port 7001 (#0)
+> GET / HTTP/1.1
+> Host: mlflow.oss
+> User-Agent: curl/7.81.0
+> Accept: */*
+> 
+* Mark bundle as not supporting multiuse
+< HTTP/1.1 200 OK
+< server: istio-envoy
+< date: Thu, 02 Oct 2025 09:21:12 GMT
+< content-disposition: inline; filename=index.html
+< content-type: text/html; charset=utf-8
+< content-length: 615
+< last-modified: Tue, 11 Mar 2025 21:54:22 GMT
+< cache-control: no-cache
+< etag: "1741730062.0-615-3334150879"
+< x-envoy-upstream-service-time: 3
+# logs
+[2025-10-02T09:21:12.426Z] "GET / HTTP/1.1" 200 - via_upstream - "-" 0 615 3 3 "10.244.0.1" "curl/7.81.0" "a74df38a-53a1-48a3-ae1a-47eaa8aa308a" "mlflow.oss" "10.244.0.22:5000" outbound|5000||mlflow.mlflow.svc.cluster.local 10.244.0.44:48148 10.244.0.44:9501 10.244.0.1:17215 - -
+
+# mlflow.minio.oss
+# curl -v -H "Host: mlflow.minio.oss" http://localhost:7001
+*   Trying 127.0.0.1:7001...
+* Connected to localhost (127.0.0.1) port 7001 (#0)
+> GET / HTTP/1.1
+> Host: mlflow.minio.oss
+> User-Agent: curl/7.81.0
+> Accept: */*
+> 
+* Mark bundle as not supporting multiuse
+< HTTP/1.1 200 OK
+< accept-ranges: bytes
+< content-length: 1310
+< content-type: text/html
+< last-modified: Thu, 02 Oct 2025 09:22:20 GMT
+< server: istio-envoy
+< x-content-type-options: nosniff
+< x-frame-options: DENY
+< x-xss-protection: 1; mode=block
+< date: Thu, 02 Oct 2025 09:22:20 GMT
+< x-envoy-upstream-service-time: 1
+# logs
+[2025-10-02T09:22:20.986Z] "GET / HTTP/1.1" 200 - via_upstream - "-" 0 1310 2 1 "10.244.0.1" "curl/7.81.0" "47a0961d-93d9-4ea3-bad0-787986f68d75" "mlflow.minio.oss" "10.244.0.38:9001" outbound|9001||mlflow-minio-service.mlflow.svc.cluster.local 10.244.0.44:47716 10.244.0.44:9501 10.244.0.1:10680 - -
+
+# prometheus.oss
+# curl -v -H "Host: prometheus.oss" http://localhost:7001
+*   Trying 127.0.0.1:7001...
+* Connected to localhost (127.0.0.1) port 7001 (#0)
+> GET / HTTP/1.1
+> Host: prometheus.oss
+> User-Agent: curl/7.81.0
+> Accept: */*
+> 
+* Mark bundle as not supporting multiuse
+< HTTP/1.1 302 Found
+< content-type: text/html; charset=utf-8
+< location: /graph
+< date: Thu, 02 Oct 2025 09:23:14 GMT
+< content-length: 29
+< x-envoy-upstream-service-time: 0
+< server: istio-envoy
+
+* Connection #0 to host localhost left intact
+# logs
+[2025-10-02T09:23:14.036Z] "GET / HTTP/1.1" 302 - via_upstream - "-" 0 29 1 0 "10.244.0.1" "curl/7.81.0" "d014945b-c413-49f6-9fd4-4734ec6643d3" "prometheus.oss" "10.244.0.36:9090" outbound|8080||prometheus-service.monitoring.svc.cluster.local 10.244.0.44:43144 10.244.0.44:9501 10.244.0.1:13318 - -
+
+# grafana.oss
+# curl -v -H "Host: grafana.oss" http://localhost:7001
+*   Trying 127.0.0.1:7001...
+* Connected to localhost (127.0.0.1) port 7001 (#0)
+> GET / HTTP/1.1
+> Host: grafana.oss
+> User-Agent: curl/7.81.0
+> Accept: */*
+> 
+* Mark bundle as not supporting multiuse
+< HTTP/1.1 302 Found
+< cache-control: no-cache
+< content-type: text/html; charset=utf-8
+< expires: -1
+< location: /login
+< pragma: no-cache
+< set-cookie: redirect_to=%2F; Path=/; HttpOnly; SameSite=Lax
+< x-content-type-options: nosniff
+< x-frame-options: deny
+< x-xss-protection: 1; mode=block
+< date: Thu, 02 Oct 2025 09:23:50 GMT
+< content-length: 29
+< x-envoy-upstream-service-time: 0
+< server: istio-envoy
+* Connection #0 to host localhost left intact
+# logs
+[2025-10-02T09:23:50.657Z] "GET / HTTP/1.1" 302 - via_upstream - "-" 0 29 1 0 "10.244.0.1" "curl/7.81.0" "66306981-3b51-4a32-adf7-4b7696871947" "grafana.oss" "10.244.0.32:3000" outbound|3000||grafana.monitoring.svc.cluster.local 10.244.0.44:57096 10.244.0.44:9501 10.244.0.1:55575 - -
+
+# forwarder.frontend.oss
+# curl -v -H "Host: forwarder.frontend.oss" http://localhost:7001/docs
+*   Trying 127.0.0.1:7001...
+* Connected to localhost (127.0.0.1) port 7001 (#0)
+> GET /docs HTTP/1.1
+> Host: forwarder.frontend.oss
+> User-Agent: curl/7.81.0
+> Accept: */*
+> 
+* Mark bundle as not supporting multiuse
+< HTTP/1.1 200 OK
+< date: Thu, 02 Oct 2025 09:25:42 GMT
+< server: istio-envoy
+< content-length: 931
+< content-type: text/html; charset=utf-8
+< x-envoy-upstream-service-time: 1
+* Connection #0 to host localhost left intact
+# logs
+[2025-10-02T09:25:42.668Z] "GET /docs HTTP/1.1" 200 - via_upstream - "-" 0 931 2 1 "10.244.0.1" "curl/7.81.0" "e8320ce5-256f-4679-a376-4d25f47dbd62" "forwarder.frontend.oss" "10.244.0.93:7600" outbound|7600||fastapi-service.forwarder.svc.cluster.local 10.244.0.44:57914 10.244.0.44:9501 10.244.0.1:16906 - -
+
+# forwarder.monitor.oss
+# curl -v -H "Host: forwarder.monitor.oss" http://localhost:7001
+*   Trying 127.0.0.1:7001...
+* Connected to localhost (127.0.0.1) port 7001 (#0)
+> GET / HTTP/1.1
+> Host: forwarder.monitor.oss
+> User-Agent: curl/7.81.0
+> Accept: */*
+> 
+* Mark bundle as not supporting multiuse
+< HTTP/1.1 401 Unauthorized
+< server: istio-envoy
+< content-type: text/html; charset=UTF-8
+< date: Thu, 02 Oct 2025 09:27:01 GMT
+< www-authenticate: Basic realm="flower"
+< content-length: 13
+< x-envoy-upstream-service-time: 3
+* Connection #0 to host localhost left intact
+Access denied
+# logs
+[2025-10-02T09:27:01.567Z] "GET / HTTP/1.1" 401 - via_upstream - "-" 0 13 3 3 "10.244.0.1" "curl/7.81.0" "a2e25434-c423-4604-8d44-de80024d5415" "forwarder.monitor.oss" "10.244.0.99:7601" outbound|7601||flower-service.forwarder.svc.cluster.local 10.244.0.44:37690 10.244.0.44:9501 10.244.0.1:28145 - -
+
+# forwarder.airflow.oss
+# curl -v -H "Host: forwarder.airflow.oss" http://localhost:7001
+*   Trying 127.0.0.1:7001...
+* Connected to localhost (127.0.0.1) port 7001 (#0)
+> GET / HTTP/1.1
+> Host: forwarder.airflow.oss
+> User-Agent: curl/7.81.0
+> Accept: */*
+> 
+* Mark bundle as not supporting multiuse
+< HTTP/1.1 200 OK
+< date: Fri, 03 Oct 2025 06:53:59 GMT
+< server: istio-envoy
+< content-length: 483
+< content-type: text/html; charset=utf-8
+< vary: Accept-Encoding
+< x-envoy-upstream-service-time: 6
+# logs
+[2025-10-03T06:53:59.417Z] "GET / HTTP/1.1" 200 - via_upstream - "-" 0 483 7 6 "10.244.0.1" "curl/7.81.0" "520a504a-2f7e-4383-812d-b6784d142216" "forwarder.airflow.oss" "10.244.0.87:8080" outbound|8080||airflow-api-server.airflow.svc.cluster.local 10.244.0.44:55830 10.244.0.44:9501 10.244.0.1:12338 - -
+
+# kiali.oss
+# curl -v -H "Host: kiali.oss" http://localhost:7001
+*   Trying 127.0.0.1:7001...
+* Connected to localhost (127.0.0.1) port 7001 (#0)
+> GET / HTTP/1.1
+> Host: kiali.oss
+> User-Agent: curl/7.81.0
+> Accept: */*
+> 
+* Mark bundle as not supporting multiuse
+< HTTP/1.1 302 Found
+< content-type: text/html; charset=utf-8
+< location: /kiali/
+< vary: Accept-Encoding
+< date: Thu, 02 Oct 2025 09:27:48 GMT
+< content-length: 30
+< x-envoy-upstream-service-time: 0
+< server: istio-envoy
+
+* Connection #0 to host localhost left intact
+# logs
+[2025-10-02T09:27:48.638Z] "GET / HTTP/1.1" 302 - via_upstream - "-" 0 30 1 0 "10.244.0.1" "curl/7.81.0" "191bef02-39e6-4015-9b13-9092ac777ae9" "kiali.oss" "10.244.0.123:20001" outbound|20001||kiali.istio-system.svc.cluster.local 10.244.0.44:39632 10.244.0.44:9501 10.244.0.1:58115 - -
+
+# minio.oss
+# curl -v -H "Host: minio.oss" http://localhost:7001
+*   Trying 127.0.0.1:7001...
+* Connected to localhost (127.0.0.1) port 7001 (#0)
+> GET / HTTP/1.1
+> Host: minio.oss
+> User-Agent: curl/7.81.0
+> Accept: */*
+> 
+* Mark bundle as not supporting multiuse
+< HTTP/1.1 200 OK
+< accept-ranges: bytes
+< content-length: 1309
+< content-security-policy: default-src 'self' 'unsafe-eval' 'unsafe-inline'; script-src 'self' https://unpkg.com;  connect-src 'self' https://unpkg.com;
+< content-type: text/html
+< last-modified: Thu, 02 Oct 2025 09:28:42 GMT
+< referrer-policy: strict-origin-when-cross-origin
+< server: istio-envoy
+< x-content-type-options: nosniff
+< x-frame-options: DENY
+< x-xss-protection: 1; mode=block
+< date: Thu, 02 Oct 2025 09:28:42 GMT
+< x-envoy-upstream-service-time: 1
+# logs
+[2025-10-02T09:28:42.772Z] "GET / HTTP/1.1" 200 - via_upstream - "-" 0 1309 2 1 "10.244.0.1" "curl/7.81.0" "67147df3-58f2-457f-b416-e45a60dcfa8e" "minio.oss" "10.244.0.111:9001" outbound|9101||minio-service.storage.svc.cluster.local 10.244.0.44:51440 10.244.0.44:9501 10.244.0.1:64383 - -
+
+# mongo.oss
+# curl -v -H "Host: mongo.oss" http://localhost:7001
+*   Trying 127.0.0.1:7001...
+* Connected to localhost (127.0.0.1) port 7001 (#0)
+> GET / HTTP/1.1
+> Host: mongo.oss
+> User-Agent: curl/7.81.0
+> Accept: */*
+> 
+* Mark bundle as not supporting multiuse
+< HTTP/1.1 401 Unauthorized
+< x-powered-by: Express
+< www-authenticate: Basic realm="Authorization Required"
+< date: Thu, 02 Oct 2025 09:29:48 GMT
+< content-length: 12
+< x-envoy-upstream-service-time: 6
+< server: istio-envoy
+< 
+* Connection #0 to host localhost left intact
+Unauthorized
+# logs
+[2025-10-02T09:29:48.685Z] "GET / HTTP/1.1" 401 - via_upstream - "-" 0 12 6 6 "10.244.0.1" "curl/7.81.0" "cc9cdfb3-6ec8-4be3-943c-7de884ca0e1c" "mongo.oss" "10.244.0.103:8081" outbound|7200||express-service.storage.svc.cluster.local 10.244.0.44:57880 10.244.0.44:9501 10.244.0.1:19851 - -
+
+# qdrant.oss
+# curl -v -H "Host: qdrant.oss" http://localhost:7001
+*   Trying 127.0.0.1:7001...
+* Connected to localhost (127.0.0.1) port 7001 (#0)
+> GET / HTTP/1.1
+> Host: qdrant.oss
+> User-Agent: curl/7.81.0
+> Accept: */*
+> 
+* Mark bundle as not supporting multiuse
+< HTTP/1.1 200 OK
+< content-length: 112
+< content-type: application/json
+< vary: Origin, Access-Control-Request-Method, Access-Control-Request-Headers
+< date: Thu, 02 Oct 2025 09:30:44 GMT
+< x-envoy-upstream-service-time: 1
+< server: istio-envoy
+< 
+* Connection #0 to host localhost left intact
+{"title":"qdrant - vector search engine","version":"1.15.5","commit":"48203e414e4e7f639a6d394fb6e4df695f808e51"}
+# logs
+[2025-10-02T09:30:44.955Z] "GET / HTTP/1.1" 200 - via_upstream - "-" 0 112 1 1 "10.244.0.1" "curl/7.81.0" "1fc0fe41-b0ec-4958-a8f0-771b6bedfc21" "qdrant.oss" "10.244.0.116:6333" outbound|7201||qdrant-service.storage.svc.cluster.local 10.244.0.44:42788 10.244.0.44:9501 10.244.0.1:29970 - -
+
+# neo4j.oss
+# curl -v -H "Host: neo4j.oss" http://localhost:7001
+*   Trying 127.0.0.1:7001...
+* Connected to localhost (127.0.0.1) port 7001 (#0)
+> GET / HTTP/1.1
+> Host: neo4j.oss
+> User-Agent: curl/7.81.0
+> Accept: */*
+> 
+* Mark bundle as not supporting multiuse
+< HTTP/1.1 200 OK
+< date: Thu, 02 Oct 2025 09:31:26 GMT
+< access-control-allow-origin: *
+< content-type: application/json
+< vary: Accept
+< content-length: 241
+< x-envoy-upstream-service-time: 23
+< server: istio-envoy
+< 
+* Connection #0 to host localhost left intact
+{"bolt_routing":"neo4j://neo4j.oss:7687","query":"http://neo4j.oss/db/{databaseName}/query/v2","transaction":"http://neo4j.oss/db/{databaseName}/tx","bolt_direct":"bolt://neo4j.oss:7687","neo4j_version":"5.26.12","neo4j_edition":"community"}
+# logs 
+[2025-10-02T09:31:26.497Z] "GET / HTTP/1.1" 200 - via_upstream - "-" 0 241 24 23 "10.244.0.1" "curl/7.81.0" "8bbbf8d8-4898-4790-ad17-af3235d94403" "neo4j.oss" "10.244.0.115:7474" outbound|7474||neo4j-service.storage.svc.cluster.local 10.244.0.44:58414 10.244.0.44:9501 10.244.0.1:47335 - -
+
+# ollama.oss
+# curl -v -H "Host: ollama.oss" http://localhost:7001
+*   Trying 127.0.0.1:7001...
+* Connected to localhost (127.0.0.1) port 7001 (#0)
+> GET / HTTP/1.1
+> Host: ollama.oss
+> User-Agent: curl/7.81.0
+> Accept: */*
+> 
+* Mark bundle as not supporting multiuse
+< HTTP/1.1 200 OK
+< content-type: text/plain; charset=utf-8
+< date: Thu, 02 Oct 2025 09:40:40 GMT
+< content-length: 17
+< x-envoy-upstream-service-time: 2
+< server: istio-envoy
+< 
+* Connection #0 to host localhost left intact
+Ollama is running
+# logs
+[2025-10-02T09:40:40.882Z] "GET / HTTP/1.1" 200 - via_upstream - "-" 0 17 3 2 "10.244.0.1" "curl/7.81.0" "cb06046f-8695-4608-9216-438e88171fdd" "ollama.oss" "10.244.0.120:11434" outbound|7100||ollama-service.language.svc.cluster.local 10.244.0.44:33744 10.244.0.44:9501 10.244.0.1:16719 - -
+
+# webui.oss
+# curl -v -H "Host: webui.oss" http://localhost:7001
+*   Trying 127.0.0.1:7001...
+* Connected to localhost (127.0.0.1) port 7001 (#0)
+> GET / HTTP/1.1
+> Host: webui.oss
+> User-Agent: curl/7.81.0
+> Accept: */*
+> 
+* Mark bundle as not supporting multiuse
+< HTTP/1.1 200 OK
+< date: Thu, 02 Oct 2025 09:41:22 GMT
+< server: istio-envoy
+< content-type: text/html; charset=utf-8
+< accept-ranges: bytes
+< content-length: 7009
+< last-modified: Mon, 29 Sep 2025 15:10:52 GMT
+< etag: "e916fcf4eefb35f418e8e4be845c0853"
+< vary: Accept-Encoding
+< x-process-time: 0
+< x-envoy-upstream-service-time: 11
+< 
+* Connection #0 to host localhost left intact
+# logs
+[2025-10-02T09:41:23.596Z] "GET / HTTP/1.1" 200 - via_upstream - "-" 0 7009 12 11 "10.244.0.1" "curl/7.81.0" "f8824ee6-8289-4b74-8747-35af29bc8ed0" "webui.oss" "10.244.0.121:8080" outbound|7101||webui-service.language.svc.cluster.local 10.244.0.44:33576 10.244.0.44:9501 10.244.0.1:9797 - -
+```
+
+With these test we know that these services can be accessed outside the docke containers, which means we only need to configure computer /etc/hosts and VM firewall access to use them in our browsers. The /etc/hosts template is:
+
+```
+(vm_floating_ip) kubeflow.oss
+(vm_floating_ip) kubeflow.minio.oss
+(vm_floating_ip) mlflow.oss
+(vm_floating_ip) mlflow.minio.oss
+(vm_floating_ip) prometheus.oss
+(vm_floating_ip) grafana.oss
+(vm_floating_ip) forwarder.frontend.oss
+(vm_floating_ip) forwarder.monitor.oss
+(vm_floating_ip) forwarder.airflow.oss
+(vm_floating_ip) kiali.oss
+(vm_floating_ip) minio.oss
+(vm_floating_ip) mongo.oss
+(vm_floating_ip) qdrant.oss
+(vm_floating_ip) neo4j.oss
+(vm_floating_ip) ollama.oss
+(vm_floating_ip) webui.oss
+```
+
+You can modify the file with:
+
+```
+sudo nano /etc/hosts
+CTRL + X
+Y
+```
+
+Now you only need to add the following security group rule:
+
+   - Custom TCP Rule
+   - Ingress
+   - Port = 7001
+   - CIRD = your IP
+
+You can then access the dashboards with your browser using the following links:
+
+   - http://kubeflow.oss:7001
+   - http://kubeflow.minio.oss:7001
+   - http://mlflow.oss:7001
+   - http://mlflow.minio.oss:7001
+   - http://prometheus.oss:7001
+   - http://grafana.oss:7001
+   - http://forwarder.frontend.oss:7001/docs
+   - http://forwarder.monitor.oss:7001
+   - http://forwarder.airflow.oss:7001
+   - http://kiali.oss:7001
+   - http://minio.oss:7001
+   - http://mongo.oss:7001
+   - http://qdrant.oss:7001/dashboard
+   - http://neo4j.oss:7001
+   - http://webui.oss:7001
+
+You can now use kiali to see the traffic in the network by doing the following:
+
+   - Click graph
+   - Select airflow, forwarder, kubeflow, language, mlflow, monitoring and storage namespaces
+   - Connect to any dashboard or refresh a existing page
+   - Click the refresh button on the top right corner
+   - See the updated graph show green arrows to services
+
+Kiali additionally provides a easy way to check the gateways and virtualservices by doing the following:
+
+   - Click Istio config
+   - Select default, airflow, forwarder, kubeflow, language, mlflow, monitoring and storage namespaces
+   - Click either gateway or virtualservice
+   - You will now see the used YAML
+
+This can be used to modify istio yamls as needed, but we will talk about it future parts. The final preparation we need to do is to create gateways and virtualservice pairs for TCP connections. The difference between HTTP and TCP is that TCP does not allow the use of hosts, which means we need to create gateway-virtualservice pairs for available ports. This is the reason for soo many extramappingports in the Kind configuration, since TCP connections take a port each and it could be useful to have separate ports for HTTP connections. The gateway and virtualservice templates for TCP connections are:
+
+```
+apiVersion: networking.istio.io/v1beta1
+kind: Gateway
+metadata:
+  name: (name)-gateway
+spec:
+  selector:
+    app: istio-ingressgateway
+    istio: ingressgateway
+  servers:
+  - port:
+      name: tcp
+      number: (ingress-port)
+      protocol: TCP
+    hosts:
+    - '*'
+---
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: (name)-virtualservice
+spec:
+  hosts:
+  - "*"
+  gateways:
+  - (name)-gateway
+  http:
+  - match:
+    - port: (ingress-port)
+    route:
+    - destination:
+        host: (service-name).(namespace).svc.cluster.local
+        port:
+          number: (service-port)
+```
+
+These are again provided in deployments/networking/tcp, which we can deploy with:
+
+```
+kubectl apply -k tcp
+```
+
+You should now have the following gateways and virtualservices:
+
+```
+# kubectl get gateways -A
+NAMESPACE         NAME                    AGE
+default           dashboards-gateway-1    21h
+default           minio-gateway           19h
+default           mongo-gateway           19h
+default           neo4j-gateway           19h
+default           postgres-gateway        19h
+default           qdrant-gateway          19h
+default           redis-gateway           19h
+istio-system      cluster-local-gateway   4d
+istio-system      istio-ingressgateway    4d
+knative-serving   knative-local-gateway   4d
+kubeflow          kubeflow-gateway        4d
+
+# kubectl get virtualservices -A
+NAMESPACE   NAME                                GATEWAYS                        HOSTS                        AGE
+default     express-virtualservice              ["dashboards-gateway-1"]        ["mongo.oss"]                21h
+default     forwarder-airflow-virtualservice    ["dashboards-gateway-1"]        ["forwarder.airflow.oss"]    40s
+default     forwarder-frontend-virtualservice   ["dashboards-gateway-1"]        ["forwarder.frontend.oss"]   21h
+default     forwarder-monitor-virtualservice    ["dashboards-gateway-1"]        ["forwarder.monitor.oss"]    21h
+default     grafana-virtualservice              ["dashboards-gateway-1"]        ["grafana.oss"]              21h
+default     kiali-virtualservice                ["dashboards-gateway-1"]        ["kiali.oss"]                21h
+default     kubeflow-minio-virtualservice       ["dashboards-gateway-1"]        ["kubeflow.minio.oss"]       21h
+default     kubeflow-virtualservice             ["dashboards-gateway-1"]        ["kubeflow.oss"]             21h
+default     minio-server-virtualservice         ["minio-gateway"]               ["*"]                        19h
+default     minio-virtualservice                ["dashboards-gateway-1"]        ["minio.oss"]                21h
+default     mlflow-minio-virtualservice         ["dashboards-gateway-1"]        ["mlflow.minio.oss"]         21h
+default     mlflow-virtualservice               ["dashboards-gateway-1"]        ["mlflow.oss"]               21h
+default     mongo-virtualservice                ["mongo-gateway"]               ["*"]                        19h
+default     neo4j-bolt-virtualservice           ["neo4j-gateway"]               ["*"]                        19h
+default     neo4j-virtualservice                ["dashboards-gateway-1"]        ["neo4j.oss"]                21h
+default     ollama-virtualservice               ["dashboards-gateway-1"]        ["ollama.oss"]               21h
+default     postgres-virtualservice             ["postgres-gateway"]            ["*"]                        19h
+default     prometheus-virtualservice           ["dashboards-gateway-1"]        ["prometheus.oss"]           21h
+default     qdrant-tcp-virtualservice           ["qdrant-gateway"]              ["*"]                        19h
+default     qdrant-virtualservice               ["dashboards-gateway-1"]        ["qdrant.oss"]               21h
+default     redis-virtualservice                ["redis-gateway"]               ["*"]                        19h
+default     webui-virtualservice                ["dashboards-gateway-1"]        ["webui.oss"]                21h
+mlflow      mlflow                              ["kubeflow/kubeflow-gateway"]   ["*"]                        4d
+```
+
+We can again test TCP connections with curl by removing the host part, which gives the following responses and logs:
+
+```
+# redis
+# curl -v http://localhost:7002
+*   Trying 127.0.0.1:7002...
+* Connected to localhost (127.0.0.1) port 7002 (#0)
+> GET / HTTP/1.1
+> Host: localhost:7002
+> User-Agent: curl/7.81.0
+> Accept: */*
+> 
+* Empty reply from server
+* Closing connection 0
+curl: (52) Empty reply from server
+# logs
+[2025-10-02T11:11:41.682Z] "- - -" 0 - - - "-" 78 0 1 - "-" "-" "-" "-" "10.244.0.106:6379" outbound|6379||redis-service.storage.svc.cluster.local 10.244.0.44:56624 10.244.0.44:9502 10.244.0.1:37386 - -
+
+# minio
+# curl -v http://localhost:7003
+*   Trying 127.0.0.1:7003...
+* Connected to localhost (127.0.0.1) port 7003 (#0)
+> GET / HTTP/1.1
+> Host: localhost:7003
+> User-Agent: curl/7.81.0
+> Accept: */*
+> 
+* Mark bundle as not supporting multiuse
+< HTTP/1.1 403 Forbidden
+< Accept-Ranges: bytes
+< Content-Length: 254
+< Content-Type: application/xml
+< Server: MinIO
+< Strict-Transport-Security: max-age=31536000; includeSubDomains
+< Vary: Origin
+< Vary: Accept-Encoding
+< X-Amz-Id-2: dd9025bab4ad464b049177c95eb6ebf374d3b3fd1af9251148b658df7ac2e3e8
+< X-Amz-Request-Id: 186AA82F13D05A10
+< X-Content-Type-Options: nosniff
+< X-Ratelimit-Limit: 30984
+< X-Ratelimit-Remaining: 30984
+< X-Xss-Protection: 1; mode=block
+< Date: Thu, 02 Oct 2025 11:12:04 GMT
+# logs
+[2025-10-02T11:12:04.590Z] "- - -" 0 - - - "-" 78 743 2 - "-" "-" "-" "-" "10.244.0.111:9000" outbound|9100||minio-service.storage.svc.cluster.local 10.244.0.44:39480 10.244.0.44:9503 10.244.0.1:48169 - -
+
+# postgres
+# curl -v http://localhost:7004
+*   Trying 127.0.0.1:7004...
+* Connected to localhost (127.0.0.1) port 7004 (#0)
+> GET / HTTP/1.1
+> Host: localhost:7004
+> User-Agent: curl/7.81.0
+> Accept: */*
+> 
+* Empty reply from server
+* Closing connection 0
+curl: (52) Empty reply from server
+# logs
+[2025-10-02T11:12:41.637Z] "- - -" 0 - - - "-" 78 0 4 - "-" "-" "-" "-" "10.244.0.117:5432" outbound|5532||postgres-service.storage.svc.cluster.local 10.244.0.44:51944 10.244.0.44:9504 10.244.0.1:26201 - -
+
+# mongo
+# curl -v http://localhost:7005
+*   Trying 127.0.0.1:7005...
+* Connected to localhost (127.0.0.1) port 7005 (#0)
+> GET / HTTP/1.1
+> Host: localhost:7005
+> User-Agent: curl/7.81.0
+> Accept: */*
+> 
+* Mark bundle as not supporting multiuse
+* HTTP 1.0, assume close after body
+< HTTP/1.0 200 OK
+< Connection: close
+< Content-Type: text/plain
+< Content-Length: 85
+< 
+It looks like you are trying to access MongoDB over HTTP on the native driver port.
+* Closing connection 0
+# logs
+*   Trying 127.0.0.1:7005...
+* Connected to localhost (127.0.0.1) port 7005 (#0)
+> GET / HTTP/1.1
+> Host: localhost:7005
+> User-Agent: curl/7.81.0
+> Accept: */*
+> 
+* Mark bundle as not supporting multiuse
+* HTTP 1.0, assume close after body
+< HTTP/1.0 200 OK
+< Connection: close
+< Content-Type: text/plain
+< Content-Length: 85
+< 
+It looks like you are trying to access MongoDB over HTTP on the native driver port.
+* Closing connection 0
+
+# qdrant
+# curl -v http://localhost:7006
+*   Trying 127.0.0.1:7006...
+* Connected to localhost (127.0.0.1) port 7006 (#0)
+> GET / HTTP/1.1
+> Host: localhost:7006
+> User-Agent: curl/7.81.0
+> Accept: */*
+> 
+* Mark bundle as not supporting multiuse
+< HTTP/1.1 200 OK
+< content-length: 112
+< vary: Origin, Access-Control-Request-Method, Access-Control-Request-Headers
+< content-type: application/json
+< date: Thu, 02 Oct 2025 11:14:10 GMT
+< 
+* Connection #0 to host localhost left intact
+{"title":"qdrant - vector search engine","version":"1.15.5","commit":"48203e414e4e7f639a6d394fb6e4df695f808e51"}
+# logs
+[2025-10-02T11:14:10.736Z] "- - -" 0 - - - "-" 78 298 3 - "-" "-" "-" "-" "10.244.0.116:6333" outbound|7201||qdrant-service.storage.svc.cluster.local 10.244.0.44:41798 10.244.0.44:9006 10.244.0.1:20259 - -
+
+# neo4j
+# curl -v http://localhost:7007
+* Connected to localhost (127.0.0.1) port 7007 (#0)
+> GET / HTTP/1.1
+> Host: localhost:7007
+> User-Agent: curl/7.81.0
+> Accept: */*
+> 
+* Mark bundle as not supporting multiuse
+< HTTP/1.1 200 OK
+< content-type: application/json
+< access-control-allow-origin: *
+< vary: Accept
+< date: Thu, 02 Oct 2025 11:14:52 GMT
+< content-length: 0
+< 
+* Connection #0 to host localhost left intact
+# logs
+[2025-10-02T11:18:16.545Z] "- - -" 0 - - - "-" 78 153 4 - "-" "-" "-" "-" "10.244.0.115:7687" outbound|7687||neo4j-service.storage.svc.cluster.local 10.244.0.44:49162 10.244.0.44:9007 10.244.0.1:50454 - -
+```
+
+Finally, we only need to open VM firewalls to gain access to these services, which we can do with the following security group rule:
+
+   - Custom TCP Rule
+   - Ingress
+   - Open Port = Port Range
+   - From Port = 7002
+   - To Port = 7007
+   - CIDR = your ip
+
+You can test these in your local computer with Curl again:
+
+```
+# redis
+curl -v http://(vm_floating_ip):7002 
+
+# minio
+curl -v http://(vm_floating_ip):7003
+
+# postgres
+curl -v http://(vm_floating_ip):7004
+
+# mongo
+curl -v http://(vm_floating_ip):7005
+
+# qdrant
+curl -v http://(vm_floating_ip):7006
+
+# neo4j
+curl -v http://(vm_floating_ip):7007
+```
+
+The easiest way to confirm everything works properly is using neo4j dasbhoard to connect to TCP address. Do this with:
+
+   - address = (vm_floating_ip):7007
+   - username = neo4j
+   - password = password
+
+With this we finally have the necessery basic experience with Istio. Be aware that this should not be used in production due to the security risks created by HTTP and the only safe guard against application abuse being a IP restricted firewall. These problems could possibly be fixed by reconfiguring the already used Dex to provide a portal for authentication (this is the reason we didn't pick 1 or 2 during the OSS setup, since istio configuration would have become more complex). We will leave these security concernes and fixes for the future parts.
