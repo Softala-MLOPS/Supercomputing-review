@@ -2702,101 +2702,1925 @@ stored_custom_metadata = get_interaction_output[2]
 ```
 formatted_stored_sacct
 ```
-OUT 773 HERE
+OUT 73 HERE
 ### Logs
+Logs objects provide accurate prints created by SLURM batch jobs. We define them with:
+```
+class Logs(BaseModel):
+    name: str = Field(alias = 'name')
+    rows: list[str] = Field(alias = 'rows')class Logs(BaseModel):
+    name: str = Field(alias = 'name')
+    rows: list[str] = Field(alias = 'rows')
+```
+```
+def format_slurm_logs(
+    file_path: str
+) -> any:
+    log_text = None
+    with open(file_path, 'r') as f:
+        log_text = f.readlines()
+    
+    row_list = []
+    if not log_text is None:
+        for line in log_text:
+            filter_1 = line.replace('\n', '')
+            filter_2 = filter_1.replace('\t', ' ')
+            filter_3 = filter_2.replace('\x1b', ' ')
+            if not filter_3.isspace() and 0 < len(filter_3):
+                row_list.append(filter_3)
+    return row_list 
+```
+```
+puhti_logs = format_slurm_logs(
+    file_path = '/home/()/multi-cloud-hpc-oss-mlops-platform/tutorials/integration/development/studying/logs/puhti-logs.txt'
+)
+```
+```
+puhti_logs_test = {
+    'name': 'puhti-run-1',
+    'rows': puhti_logs
+}
+
+validation_puhti_logs = Logs(**puhti_logs_test)
+
+validation_puhti_logs.model_dump()
+```
+```
+{'name': 'puhti-run-1',
+ 'rows': ['Loaded modules:',
+  'Currently Loaded Modules:',
+  '  1) gcc/11.3.0                  3) openmpi/4.1.4       5) StdEnv',
+  '  2) intel-oneapi-mkl/2022.1.0   4) csc-tools     (S)   6) pytorch/2.6',
+  '  Where:',
+  '   S:  Module is Sticky, requires --force to unload or purge',
+  'Activating venv',
+  'Venv active',
+  'Installed packages',
+  'Package                            Version',
+  '---------------------------------- -------------------',
+  'absl-py                            1.4.0',
+  'accelerate                         1.6.0',
+  'affine                             2.4.0',
+  'aiohappyeyeballs                   2.6.1',
+  'aiohttp                            3.11.16',
+  'aiohttp-cors                       0.8.1',
+  'aiosignal                          1.3.2',
+  'airportsdata                       20250224',
+  'alembic                            1.15.2',
+  'annotated-types                    0.7.0',
+  'ansicolors                         1.1.8',
+  'anyio                              4.9.0',
+  'apex                               0.1',
+  'argon2-cffi                        23.1.0',
+  'argon2-cffi-bindings               21.2.0',
+  'array_record                       0.7.1',
+  'arrow                              1.3.0',
+  'assertpy                           1.1',
+  'astor                              0.8.1',
+  'asttokens                          3.0.0',
+  'async-lru                          2.0.5',
+  'attrs                              25.3.0',
+  'audioread                          3.0.1',
+  'babel                              2.17.0',
+  'beautifulsoup4                     4.13.3',
+  'bitsandbytes                       0.45.5',
+  'blake3                             1.0.4',
+  'bleach                             6.2.0',
+  'blinker                            1.9.0',
+  'blosc2                             3.3.0',
+  'cachetools                         5.5.2',
+  'certifi                            2025.1.31',
+  'cffi                               1.17.1',
+  'cftime                             1.6.4.post1',
+  'charset-normalizer                 3.4.1',
+  'click                              8.1.8',
+  'click-plugins                      1.1.1',
+  'cligj                              0.7.2',
+  'cloudpickle                        3.1.1',
+  'cmake                              3.31.6',
+  'colorama                           0.4.6',
+  'colorful                           0.5.6',
+  'comm                               0.2.2',
+  'compressed-tensors                 0.9.2',
+  'contourpy                          1.3.1',
+  'cupy-cuda12x                       13.4.1',
+  'cycler                             0.12.1',
+  'Cython                             3.0.12',
+  'dash                               3.0.2',
+  'dask                               2025.3.0',
+  'dask-jobqueue                      0.9.0',
+  'databricks-sdk                     0.49.0',
+  'datasets                           3.5.0',
+  'debtcollector                      3.0.0',
+  'debugpy                            1.8.13',
+  'decorator                          5.2.1',
+  'deepspeed                          0.16.5',
+  'deepspeed-kernels                  0.0.1.dev1698255861',
+  'defusedxml                         0.7.1',
+  'Deprecated                         1.2.18',
+  'depyf                              0.18.0',
+  'diffusers                          0.32.2',
+  'dill                               0.3.8',
+  'diskcache                          5.6.3',
+  'distlib                            0.3.9',
+  'distributed                        2025.3.0',
+  'distro                             1.9.0',
+  'dm-tree                            0.1.9',
+  'dnspython                          2.7.0',
+  'docker                             7.1.0',
+  'docstring_parser                   0.16',
+  'einops                             0.8.1',
+  'email_validator                    2.2.0',
+  'entrypoints                        0.4',
+  'et_xmlfile                         2.0.0',
+  'etils                              1.12.2',
+  'evaluate                           0.4.3',
+  'executing                          2.2.0',
+  'faiss                              1.10.0',
+  'fastapi                            0.115.12',
+  'fastapi-cli                        0.0.7',
+  'fastargs                           1.2.0',
+  'fastjsonschema                     2.21.1',
+  'fastrlock                          0.8.3',
+  'ffcv                               1.0.2',
+  'filelock                           3.18.0',
+  'flash_attn                         2.7.4.post1',
+  'Flask                              3.0.3',
+  'fonttools                          4.57.0',
+  'fqdn                               1.5.1',
+  'frozenlist                         1.5.0',
+  'fsspec                             2024.12.0',
+  'fvcore                             0.1.5.post20221221',
+  'gensim                             4.3.3',
+  'geopandas                          1.0.1',
+  'gguf                               0.10.0',
+  'gitdb                              4.0.12',
+  'GitPython                          3.1.44',
+  'google-api-core                    2.24.2',
+  'google-auth                        2.38.0',
+  'googleapis-common-protos           1.69.2',
+  'gpytorch                           1.14',
+  'graphene                           3.4.3',
+  'graphql-core                       3.2.6',
+  'graphql-relay                      3.2.0',
+  'graphviz                           0.20.3',
+  'greenlet                           3.1.1',
+  'grpcio                             1.71.0',
+  'gunicorn                           23.0.0',
+  'gym                                0.26.2',
+  'gym-notices                        0.0.8',
+  'h11                                0.14.0',
+  'h5py                               3.13.0',
+  'hf-xet                             1.0.2',
+  'hjson                              3.1.0',
+  'httpcore                           1.0.7',
+  'httptools                          0.6.4',
+  'httpx                              0.28.1',
+  'huggingface-hub                    0.30.2',
+  'idna                               3.10',
+  'imageio                            2.37.0',
+  'imbalanced-learn                   0.13.0',
+  'immutabledict                      4.2.1',
+  'importlib_metadata                 8.6.1',
+  'importlib_resources                6.5.2',
+  'iniconfig                          2.1.0',
+  'interegular                        0.3.3',
+  'iopath                             0.1.10',
+  'ipykernel                          6.29.5',
+  'ipython                            9.1.0',
+  'ipython-genutils                   0.2.0',
+  'ipython_pygments_lexers            1.1.1',
+  'ipywidgets                         8.1.5',
+  'iso8601                            2.1.0',
+  'isoduration                        20.11.0',
+  'itsdangerous                       2.2.0',
+  'jaxtyping                          0.3.1',
+  'jedi                               0.19.2',
+  'Jinja2                             3.1.6',
+  'jiter                              0.9.0',
+  'joblib                             1.4.2',
+  'json5                              0.12.0',
+  'jsonpatch                          1.33',
+  'jsonpointer                        3.0.0',
+  'jsonschema                         4.23.0',
+  'jsonschema-specifications          2024.10.1',
+  'jupyter_client                     8.6.3',
+  'jupyter_core                       5.7.2',
+  'jupyter-events                     0.12.0',
+  'jupyter-lsp                        2.2.5',
+  'jupyter_server                     2.15.0',
+  'jupyter-server-mathjax             0.2.6',
+  'jupyter_server_proxy               4.4.0',
+  'jupyter_server_terminals           0.5.3',
+  'jupyterlab                         4.3.6',
+  'jupyterlab-dash                    0.1.0a3',
+  'jupyterlab_git                     0.51.1',
+  'jupyterlab_pygments                0.3.0',
+  'jupyterlab_server                  2.27.3',
+  'jupyterlab_widgets                 3.0.13',
+  'jupytext                           1.17.0',
+  'kagglehub                          0.3.11',
+  'keopscore                          2.2.3',
+  'keras                              3.9.2',
+  'keras-core                         0.1.7',
+  'keras-cv                           0.9.0',
+  'keystoneauth1                      5.10.0',
+  'kiwisolver                         1.4.8',
+  'lark                               1.2.2',
+  'lazy_loader                        0.4',
+  'librosa                            0.11.0',
+  'lightning                          2.5.1',
+  'lightning-utilities                0.14.3',
+  'linear-operator                    0.6',
+  'lit                                18.1.8',
+  'llguidance                         0.7.13',
+  'llvmlite                           0.44.0',
+  'lm-format-enforcer                 0.10.11',
+  'lmdb                               1.6.2',
+  'locket                             1.0.0',
+  'lxml                               5.3.2',
+  'Mako                               1.3.9',
+  'Markdown                           3.7',
+  'markdown-it-py                     3.0.0',
+  'MarkupSafe                         3.0.2',
+  'matplotlib                         3.10.1',
+  'matplotlib-inline                  0.1.7',
+  'mdit-py-plugins                    0.4.2',
+  'mdurl                              0.1.2',
+  'mistral_common                     1.5.4',
+  'mistune                            3.1.3',
+  'ml_dtypes                          0.5.1',
+  'mlflow                             2.21.3',
+  'mlflow-skinny                      2.21.3',
+  'mpi4py                             4.0.3',
+  'mpmath                             1.3.0',
+  'msgpack                            1.1.0',
+  'msgspec                            0.19.0',
+  'multidict                          6.3.2',
+  'multiprocess                       0.70.16',
+  'mysql-connector-python             9.2.0',
+  'namex                              0.0.8',
+  'nanobind                           2.6.1',
+  'narwhals                           1.34.0',
+  'nbclassic                          1.2.0',
+  'nbclient                           0.10.2',
+  'nbconvert                          7.16.6',
+  'nbdime                             4.0.2',
+  'nbformat                           5.10.4',
+  'ndindex                            1.9.2',
+  'nest-asyncio                       1.6.0',
+  'netaddr                            1.3.0',
+  'netCDF4                            1.7.2',
+  'networkx                           3.4.2',
+  'ninja                              1.11.1.4',
+  'nltk                               3.9.1',
+  'notebook                           7.3.3',
+  'notebook_shim                      0.2.4',
+  'numba                              0.61.0',
+  'numexpr                            2.10.2',
+  'numpy                              1.26.4',
+  'nvidia-cublas-cu12                 12.4.5.8',
+  'nvidia-cuda-cupti-cu12             12.4.127',
+  'nvidia-cuda-nvrtc-cu12             12.4.127',
+  'nvidia-cuda-runtime-cu12           12.4.127',
+  'nvidia-cudnn-cu12                  9.1.0.70',
+  'nvidia-cufft-cu12                  11.2.1.3',
+  'nvidia-curand-cu12                 10.3.5.147',
+  'nvidia-cusolver-cu12               11.6.1.9',
+  'nvidia-cusparse-cu12               12.3.1.170',
+  'nvidia-cusparselt-cu12             0.6.2',
+  'nvidia-nccl-cu12                   2.21.5',
+  'nvidia-nvjitlink-cu12              12.4.127',
+  'nvidia-nvtx-cu12                   12.4.127',
+  'odfpy                              1.4.1',
+  'openai                             1.71.0',
+  'opencensus                         0.11.4',
+  'opencensus-context                 0.1.3',
+  'opencv-python                      4.11.0.86',
+  'opencv-python-headless             4.11.0.86',
+  'openpyxl                           3.1.5',
+  'opentelemetry-api                  1.31.1',
+  'opentelemetry-sdk                  1.31.1',
+  'opentelemetry-semantic-conventions 0.52b1',
+  'optree                             0.15.0',
+  'os-service-types                   1.7.0',
+  'oslo.config                        9.7.1',
+  'oslo.i18n                          6.5.1',
+  'oslo.serialization                 5.7.0',
+  'oslo.utils                         8.2.0',
+  'outlines                           0.1.11',
+  'outlines_core                      0.1.26',
+  'overrides                          7.7.0',
+  'packaging                          24.2',
+  'pandas                             2.2.3',
+  'pandocfilters                      1.5.1',
+  'papermill                          2.6.0',
+  'parso                              0.8.4',
+  'partd                              1.4.2',
+  'partial-json-parser                0.2.1.1.post5',
+  'pbr                                6.1.1',
+  'peft                               0.15.1',
+  'pexpect                            4.9.0',
+  'pillow                             11.1.0',
+  'pip                                25.0.1',
+  'platformdirs                       4.3.7',
+  'plotly                             6.0.1',
+  'pluggy                             1.5.0',
+  'pooch                              1.8.2',
+  'portalocker                        3.1.1',
+  'prometheus_client                  0.21.1',
+  'prometheus-fastapi-instrumentator  7.1.0',
+  'promise                            2.3',
+  'prompt_toolkit                     3.0.50',
+  'propcache                          0.3.1',
+  'proto-plus                         1.26.1',
+  'protobuf                           3.20.3',
+  'psutil                             7.0.0',
+  'ptyprocess                         0.7.0',
+  'pure_eval                          0.2.3',
+  'py-cpuinfo                         9.0.0',
+  'py-spy                             0.4.0',
+  'pyarrow                            19.0.1',
+  'pyasn1                             0.6.1',
+  'pyasn1_modules                     0.4.2',
+  'pybind11                           2.13.6',
+  'pycodestyle                        2.13.0',
+  'pycountry                          24.6.1',
+  'pycparser                          2.22',
+  'pydantic                           2.11.3',
+  'pydantic_core                      2.33.1',
+  'pydot                              3.0.4',
+  'pyflakes                           3.3.2',
+  'pyglet                             1.5.15',
+  'Pygments                           2.19.1',
+  'pykeops                            2.2.3',
+  'pynndescent                        0.5.13',
+  'pyogrio                            0.10.0',
+  'pyparsing                          3.2.3',
+  'pyproj                             3.7.1',
+  'pyprojroot                         0.3.0',
+  'pysqlite3                          0.5.4',
+  'pytest                             8.3.5',
+  'python-dateutil                    2.9.0.post0',
+  'python-dotenv                      1.1.0',
+  'python-json-logger                 3.3.0',
+  'python-keystoneclient              5.6.0',
+  'python-multipart                   0.0.20',
+  'python-swiftclient                 4.7.0',
+  'pytorch-lightning                  2.5.1',
+  'pytorch-pfn-extras                 0.8.2',
+  'pytz                               2025.2',
+  'PyYAML                             6.0.2',
+  'pyzmq                              26.4.0',
+  'rasterio                           1.4.3',
+  'ray                                2.43.0',
+  'referencing                        0.36.2',
+  'regex                              2024.11.6',
+  'requests                           2.32.3',
+  'retrying                           1.3.4',
+  'rfc3339-validator                  0.1.4',
+  'rfc3986                            2.0.0',
+  'rfc3986-validator                  0.1.1',
+  'rich                               14.0.0',
+  'rich-toolkit                       0.14.1',
+  'rpds-py                            0.24.0',
+  'rsa                                4.9',
+  'safetensors                        0.5.3',
+  'scikit-image                       0.25.2',
+  'scikit-learn                       1.6.1',
+  'scipy                              1.13.1',
+  'seaborn                            0.13.2',
+  'Send2Trash                         1.8.3',
+  'sentencepiece                      0.2.0',
+  'setuptools                         78.1.0',
+  'shapely                            2.1.0',
+  'shellingham                        1.5.4',
+  'simpervisor                        1.0.0',
+  'simple-parsing                     0.1.7',
+  'six                                1.17.0',
+  'sklearn-compat                     0.1.3',
+  'smart-open                         7.1.0',
+  'smmap                              5.0.2',
+  'sniffio                            1.3.1',
+  'sortedcontainers                   2.4.0',
+  'soundfile                          0.13.1',
+  'soupsieve                          2.6',
+  'soxr                               0.5.0.post1',
+  'SQLAlchemy                         2.0.40',
+  'sqlparse                           0.5.3',
+  'stack-data                         0.6.3',
+  'starlette                          0.46.1',
+  'stevedore                          5.4.1',
+  'sympy                              1.13.1',
+  'tables                             3.10.2',
+  'tabulate                           0.9.0',
+  'tblib                              3.1.0',
+  'tenacity                           9.1.2',
+  'tensorboard                        2.19.0',
+  'tensorboard-data-server            0.7.2',
+  'tensorboardX                       2.6.2.2',
+  'tensorflow-datasets                4.9.8',
+  'tensorflow-metadata                1.14.0',
+  'termcolor                          3.0.1',
+  'terminado                          0.18.1',
+  'terminaltables                     3.1.10',
+  'threadpoolctl                      3.6.0',
+  'tifffile                           2025.3.30',
+  'tiktoken                           0.9.0',
+  'timm                               1.0.15',
+  'tinycss2                           1.4.0',
+  'tokenizers                         0.21.1',
+  'toml                               0.10.2',
+  'toolz                              1.0.0',
+  'torch                              2.6.0+cu124',
+  'torch-geometric                    2.6.1',
+  'torch-tb-profiler                  0.4.3',
+  'torchaudio                         2.6.0+cu124',
+  'torchinfo                          1.8.0',
+  'torchmetrics                       1.7.1',
+  'torchvision                        0.21.0+cu124',
+  'tornado                            6.4.2',
+  'tqdm                               4.67.1',
+  'traitlets                          5.14.3',
+  'transformers                       4.51.1',
+  'triton                             3.2.0',
+  'trl                                0.16.1',
+  'typer                              0.15.2',
+  'types-python-dateutil              2.9.0.20241206',
+  'typing_extensions                  4.13.1',
+  'typing-inspection                  0.4.0',
+  'tzdata                             2025.2',
+  'umap-learn                         0.5.7',
+  'uri-template                       1.3.0',
+  'urllib3                            2.3.0',
+  'uvicorn                            0.34.0',
+  'uvloop                             0.21.0',
+  'virtualenv                         20.30.0',
+  'visdom                             0.2.4',
+  'vllm                               0.8.3',
+  'wadler_lindig                      0.1.4',
+  'watchfiles                         1.0.5',
+  'wcwidth                            0.2.13',
+  'webcolors                          24.11.1',
+  'webencodings                       0.5.1',
+  'websocket-client                   1.8.0',
+  'websockets                         15.0.1',
+  'Werkzeug                           3.0.6',
+  'wheel                              0.45.1',
+  'widgetsnbextension                 4.0.13',
+  'wrapt                              1.17.2',
+  'xformers                           0.0.29.post2',
+  'xgboost                            3.0.0',
+  'xgrammar                           0.1.17',
+  'xlwt                               1.3.0',
+  'xxhash                             3.5.0',
+  'yacs                               0.1.8',
+  'yarl                               1.19.0',
+  'zict                               3.0.0',
+  'zipp                               3.21.0',
+  'Packages listed',
+  'Setting connection variables',
+  'Setting Ray variables',
+  'Setting up Ray head',
+  'IP Head: ():8265',
+  'Starting HEAD at r02c17',
+  'Setting up SSH tunnel',
+  'Reverse port forward running',
+  'Setting up Ray workers',
+  'Starting WORKER 1 at r02c18',
+  'connect_to () port 8280: failed.',
+  'connect_to () port 8280: failed.',
+  'connect_to () port 8280: failed.',
+  'connect_to () port 8280: failed.',
+  'connect_to () port 8280: failed.',
+  'connect_to () port 8280: failed.',
+  'connect_to () port 8280: failed.',
+  'connect_to () port 8280: failed.',
+  'connect_to () port 8280: failed.',
+  'connect_to () port 8280: failed.',
+  'connect_to () port 8280: failed.',
+  'connect_to () port 8280: failed.',
+  '2025-04-18 11:38:00,439 - INFO - Note: NumExpr detected 40 cores but "NUMEXPR_MAX_THREADS" not set, so enforcing safe limit of 16.',
+  '2025-04-18 11:38:00,439 - INFO - NumExpr defaulting to 16 threads.',
+  '2025-04-18 11:38:02,292 INFO usage_lib.py:467 -- Usage stats collection is enabled by default without user confirmation because this terminal is detected to be non-interactive. To disable this, add `--disable-usage-stats` to the command that starts the cluster, or run the following command: `ray disable-usage-stats` before starting the cluster. See https://docs.ray.io/en/master/cluster/usage-stats.html for more details.',
+  '2025-04-18 11:38:02,292 INFO scripts.py:865 -- Local node IP: ()',
+  '2025-04-18 11:38:06,106 SUCC scripts.py:902 -- --------------------',
+  '2025-04-18 11:38:06,106 SUCC scripts.py:903 -- Ray runtime started.',
+  '2025-04-18 11:38:06,106 SUCC scripts.py:904 -- --------------------',
+  '2025-04-18 11:38:06,107 INFO scripts.py:906 -- Next steps',
+  '2025-04-18 11:38:06,107 INFO scripts.py:909 -- To add another node to this Ray cluster, run',
+  "2025-04-18 11:38:06,107 INFO scripts.py:912 --   ray start --address='():8265'",
+  '2025-04-18 11:38:06,107 INFO scripts.py:921 -- To connect to this Ray cluster:',
+  '2025-04-18 11:38:06,107 INFO scripts.py:923 -- import ray',
+  "2025-04-18 11:38:06,107 INFO scripts.py:924 -- ray.init(_node_ip_address='()')",
+  '2025-04-18 11:38:06,107 INFO scripts.py:936 -- To submit a Ray job using the Ray Jobs CLI:',
+  "2025-04-18 11:38:06,107 INFO scripts.py:937 --   RAY_ADDRESS='http://():8280' ray job submit --working-dir . -- python my_script.py",
+  '2025-04-18 11:38:06,107 INFO scripts.py:946 -- See https://docs.ray.io/en/latest/cluster/running-applications/job-submission/index.html ',
+  '2025-04-18 11:38:06,107 INFO scripts.py:950 -- for more information on submitting Ray jobs to the Ray cluster.',
+  '2025-04-18 11:38:06,107 INFO scripts.py:955 -- To terminate the Ray runtime, run',
+  '2025-04-18 11:38:06,107 INFO scripts.py:956 --   ray stop',
+  '2025-04-18 11:38:06,107 INFO scripts.py:959 -- To view the status of the cluster, use',
+  '2025-04-18 11:38:06,107 INFO scripts.py:960 --   ray status',
+  '2025-04-18 11:38:06,107 INFO scripts.py:964 -- To monitor and debug Ray, view the dashboard at ',
+  '2025-04-18 11:38:06,107 INFO scripts.py:965 --   ():8280',
+  '2025-04-18 11:38:06,107 INFO scripts.py:972 -- If connection to the dashboard fails, check your firewall settings and network configuration.',
+  '2025-04-18 11:38:06,107 INFO scripts.py:1076 -- --block',
+  '2025-04-18 11:38:06,107 INFO scripts.py:1077 -- This command will now block forever until terminated by a signal.',
+  '2025-04-18 11:38:06,107 INFO scripts.py:1080 -- Running subprocesses are monitored and a message will be printed if any of them terminate unexpectedly. Subprocesses exit with SIGTERM will be treated as graceful, thus NOT reported.',
+  '2025-04-18 11:38:13,966 - INFO - Note: NumExpr detected 40 cores but "NUMEXPR_MAX_THREADS" not set, so enforcing safe limit of 16.',
+  '2025-04-18 11:38:13,966 - INFO - NumExpr defaulting to 16 threads.',
+  '[2025-04-18 11:38:15,762 W 3878629 3878629] global_state_accessor.cc:429: Retrying to get node with node ID 9a2ab1623d258f5f5f7e0012764e2a28556643cce30b12d87174244b',
+  '2025-04-18 11:38:15,429 INFO scripts.py:1047 -- Local node IP: ()',
+  '2025-04-18 11:38:16,777 SUCC scripts.py:1063 -- --------------------',
+  '2025-04-18 11:38:16,777 SUCC scripts.py:1064 -- Ray runtime started.',
+  '2025-04-18 11:38:16,777 SUCC scripts.py:1065 -- --------------------',
+  '2025-04-18 11:38:16,777 INFO scripts.py:1067 -- To terminate the Ray runtime, run',
+  '2025-04-18 11:38:16,777 INFO scripts.py:1068 --   ray stop',
+  '2025-04-18 11:38:16,778 INFO scripts.py:1076 -- --block',
+  '2025-04-18 11:38:16,778 INFO scripts.py:1077 -- This command will now block forever until terminated by a signal.',
+  '2025-04-18 11:38:16,778 INFO scripts.py:1080 -- Running subprocesses are monitored and a message will be printed if any of them terminate unexpectedly. Subprocesses exit with SIGTERM will be treated as graceful, thus NOT reported.',
+  'srun: Job step aborted: Waiting up to 62 seconds for job step to finish.',
+  'srun: Job step aborted: Waiting up to 62 seconds for job step to finish.',
+  'slurmstepd: error: *** STEP 27587022.2 ON r02c18 CANCELLED AT 2025-04-18T11:39:08 ***',
+  'slurmstepd: error: *** JOB 27587022 ON r02c17 CANCELLED AT 2025-04-18T11:39:08 ***',
+  'slurmstepd: error: *** STEP 27587022.1 ON r02c17 CANCELLED AT 2025-04-18T11:39:08 ***']}
+```
+```
+puhti_file_name = puhti_logs_test['name'] + '.parquet'
+puhti_logs_df = pd.DataFrame({'rows': puhti_logs_test['rows']})
+print(puhti_file_name)
+```
+```
+puhti-run-1.parquet
+```
+```
+puhti_logs_df
+```
 ```
 
+rows
+0	Loaded modules:
+1	Currently Loaded Modules:
+2	1) gcc/11.3.0 3) openmpi/4....
+3	2) intel-oneapi-mkl/2022.1.0 4) csc-tools ...
+4	Where:
+...	...
+492	srun: Job step aborted: Waiting up to 62 secon...
+493	srun: Job step aborted: Waiting up to 62 secon...
+494	slurmstepd: error: *** STEP 27587022.2 ON r02c...
+495	slurmstepd: error: *** JOB 27587022 ON r02c17 ...
+496	slurmstepd: error: *** STEP 27587022.1 ON r02c...
+
+497 rows × 1 columns
+```
+```
+formatted_puhti_logs_data = pyarrow_serialize_dataframe(
+    dataframe = puhti_logs_df
+)
+```
+```
+send_interaction_output = object_storage_interaction(
+    storage_client = workflow_swift_client,
+    parameters = {
+        'mode': 'send',
+        'bucket-target': 'pipeline',
+        'bucket-prefix': 'mlch',
+        'bucket-user': 'user@example.com',
+        'object-name': 'logs',
+        'path-replacers': {
+            'name': puhti_file_name
+        },
+        'path-names': [],
+        'overwrite': True
+    },
+    object_data = formatted_puhti_logs_data,
+    object_metadata = {'version': 1}
+)
+```
+```
+send_interaction_output = object_storage_interaction(
+    storage_client = workflow_swift_client,
+    parameters = {
+        'mode': 'send',
+        'bucket-target': 'pipeline',
+        'bucket-prefix': 'mlch',
+        'bucket-user': 'user@example.com',
+        'object-name': 'logs',
+        'path-replacers': {
+            'name': puhti_file_name
+        },
+        'path-names': [],
+        'overwrite': True
+    },
+    object_data = formatted_puhti_logs_data,
+    object_metadata = {'version': 1}
+)
+```
+```
+User object bucket: mlch-pipe-user-example-com
+Used object path: LOGS/puhti-run-1.parquet
+```
+```
+mahti_logs = format_slurm_logs(
+    file_path = '/home/()/multi-cloud-hpc-oss-mlops-platform/tutorials/integration/development/studying/logs/mahti-logs.txt'
+)
+```
+```
+mahti_logs_test = {
+    'name': 'mahti-run-1',
+    'rows': mahti_logs
+}
+
+validation_mahti_logs = Logs(**mahti_logs_test)
+
+validation_mahti_logs.model_dump()
+```
+```
+{'name': 'mahti-run-1',
+ 'rows': ['Loaded modules:',
+  'Currently Loaded Modules:',
+  '  1) gcc/11.2.0      3) openblas/0.3.18-omp       5) StdEnv',
+  '  2) openmpi/4.1.2   4) csc-tools           (S)   6) pytorch/2.6',
+  '  Where:',
+  '   S:  Module is Sticky, requires --force to unload or purge',
+  'Activating venv',
+  'Venv active',
+  'Installed packages',
+  'Package                            Version',
+  '---------------------------------- -------------------',
+  'absl-py                            1.4.0',
+  'accelerate                         1.6.0',
+  'affine                             2.4.0',
+  'aiohappyeyeballs                   2.6.1',
+  'aiohttp                            3.11.16',
+  'aiohttp-cors                       0.8.1',
+  'aiosignal                          1.3.2',
+  'airportsdata                       20250224',
+  'alembic                            1.15.2',
+  'annotated-types                    0.7.0',
+  'ansicolors                         1.1.8',
+  'anyio                              4.9.0',
+  'apex                               0.1',
+  'argon2-cffi                        23.1.0',
+  'argon2-cffi-bindings               21.2.0',
+  'array_record                       0.7.1',
+  'arrow                              1.3.0',
+  'assertpy                           1.1',
+  'astor                              0.8.1',
+  'asttokens                          3.0.0',
+  'async-lru                          2.0.5',
+  'attrs                              25.3.0',
+  'audioread                          3.0.1',
+  'babel                              2.17.0',
+  'beautifulsoup4                     4.13.3',
+  'bitsandbytes                       0.45.5',
+  'blake3                             1.0.4',
+  'bleach                             6.2.0',
+  'blinker                            1.9.0',
+  'blosc2                             3.3.0',
+  'cachetools                         5.5.2',
+  'certifi                            2025.1.31',
+  'cffi                               1.17.1',
+  'cftime                             1.6.4.post1',
+  'charset-normalizer                 3.4.1',
+  'click                              8.1.8',
+  'click-plugins                      1.1.1',
+  'cligj                              0.7.2',
+  'cloudpickle                        3.1.1',
+  'cmake                              3.31.6',
+  'colorama                           0.4.6',
+  'colorful                           0.5.6',
+  'comm                               0.2.2',
+  'compressed-tensors                 0.9.2',
+  'contourpy                          1.3.1',
+  'cupy-cuda12x                       13.4.1',
+  'cycler                             0.12.1',
+  'Cython                             3.0.12',
+  'dash                               3.0.2',
+  'dask                               2025.3.0',
+  'dask-jobqueue                      0.9.0',
+  'databricks-sdk                     0.49.0',
+  'datasets                           3.5.0',
+  'debtcollector                      3.0.0',
+  'debugpy                            1.8.13',
+  'decorator                          5.2.1',
+  'deepspeed                          0.16.5',
+  'deepspeed-kernels                  0.0.1.dev1698255861',
+  'defusedxml                         0.7.1',
+  'Deprecated                         1.2.18',
+  'depyf                              0.18.0',
+  'diffusers                          0.32.2',
+  'dill                               0.3.8',
+  'diskcache                          5.6.3',
+  'distlib                            0.3.9',
+  'distributed                        2025.3.0',
+  'distro                             1.9.0',
+  'dm-tree                            0.1.9',
+  'dnspython                          2.7.0',
+  'docker                             7.1.0',
+  'docstring_parser                   0.16',
+  'einops                             0.8.1',
+  'email_validator                    2.2.0',
+  'entrypoints                        0.4',
+  'et_xmlfile                         2.0.0',
+  'etils                              1.12.2',
+  'evaluate                           0.4.3',
+  'executing                          2.2.0',
+  'faiss                              1.10.0',
+  'fastapi                            0.115.12',
+  'fastapi-cli                        0.0.7',
+  'fastargs                           1.2.0',
+  'fastjsonschema                     2.21.1',
+  'fastrlock                          0.8.3',
+  'ffcv                               1.0.2',
+  'filelock                           3.18.0',
+  'flash_attn                         2.7.4.post1',
+  'Flask                              3.0.3',
+  'fonttools                          4.57.0',
+  'fqdn                               1.5.1',
+  'frozenlist                         1.5.0',
+  'fsspec                             2024.12.0',
+  'fvcore                             0.1.5.post20221221',
+  'gensim                             4.3.3',
+  'geopandas                          1.0.1',
+  'gguf                               0.10.0',
+  'gitdb                              4.0.12',
+  'GitPython                          3.1.44',
+  'google-api-core                    2.24.2',
+  'google-auth                        2.38.0',
+  'googleapis-common-protos           1.69.2',
+  'gpytorch                           1.14',
+  'graphene                           3.4.3',
+  'graphql-core                       3.2.6',
+  'graphql-relay                      3.2.0',
+  'graphviz                           0.20.3',
+  'greenlet                           3.1.1',
+  'grpcio                             1.71.0',
+  'gunicorn                           23.0.0',
+  'gym                                0.26.2',
+  'gym-notices                        0.0.8',
+  'h11                                0.14.0',
+  'h5py                               3.13.0',
+  'hf-xet                             1.0.2',
+  'hjson                              3.1.0',
+  'httpcore                           1.0.7',
+  'httptools                          0.6.4',
+  'httpx                              0.28.1',
+  'huggingface-hub                    0.30.2',
+  'idna                               3.10',
+  'imageio                            2.37.0',
+  'imbalanced-learn                   0.13.0',
+  'immutabledict                      4.2.1',
+  'importlib_metadata                 8.6.1',
+  'importlib_resources                6.5.2',
+  'iniconfig                          2.1.0',
+  'interegular                        0.3.3',
+  'iopath                             0.1.10',
+  'ipykernel                          6.29.5',
+  'ipython                            9.1.0',
+  'ipython-genutils                   0.2.0',
+  'ipython_pygments_lexers            1.1.1',
+  'ipywidgets                         8.1.5',
+  'iso8601                            2.1.0',
+  'isoduration                        20.11.0',
+  'itsdangerous                       2.2.0',
+  'jaxtyping                          0.3.1',
+  'jedi                               0.19.2',
+  'Jinja2                             3.1.6',
+  'jiter                              0.9.0',
+  'joblib                             1.4.2',
+  'json5                              0.12.0',
+  'jsonpatch                          1.33',
+  'jsonpointer                        3.0.0',
+  'jsonschema                         4.23.0',
+  'jsonschema-specifications          2024.10.1',
+  'jupyter_client                     8.6.3',
+  'jupyter_core                       5.7.2',
+  'jupyter-events                     0.12.0',
+  'jupyter-lsp                        2.2.5',
+  'jupyter_server                     2.15.0',
+  'jupyter-server-mathjax             0.2.6',
+  'jupyter_server_proxy               4.4.0',
+  'jupyter_server_terminals           0.5.3',
+  'jupyterlab                         4.3.6',
+  'jupyterlab-dash                    0.1.0a3',
+  'jupyterlab_git                     0.51.1',
+  'jupyterlab_pygments                0.3.0',
+  'jupyterlab_server                  2.27.3',
+  'jupyterlab_widgets                 3.0.13',
+  'jupytext                           1.17.0',
+  'kagglehub                          0.3.11',
+  'keopscore                          2.2.3',
+  'keras                              3.9.2',
+  'keras-core                         0.1.7',
+  'keras-cv                           0.9.0',
+  'keystoneauth1                      5.10.0',
+  'kiwisolver                         1.4.8',
+  'lark                               1.2.2',
+  'lazy_loader                        0.4',
+  'librosa                            0.11.0',
+  'lightning                          2.5.1',
+  'lightning-utilities                0.14.3',
+  'linear-operator                    0.6',
+  'lit                                18.1.8',
+  'llguidance                         0.7.13',
+  'llvmlite                           0.44.0',
+  'lm-format-enforcer                 0.10.11',
+  'lmdb                               1.6.2',
+  'locket                             1.0.0',
+  'lxml                               5.3.2',
+  'Mako                               1.3.9',
+  'Markdown                           3.7',
+  'markdown-it-py                     3.0.0',
+  'MarkupSafe                         3.0.2',
+  'matplotlib                         3.10.1',
+  'matplotlib-inline                  0.1.7',
+  'mdit-py-plugins                    0.4.2',
+  'mdurl                              0.1.2',
+  'mistral_common                     1.5.4',
+  'mistune                            3.1.3',
+  'ml_dtypes                          0.5.1',
+  'mlflow                             2.21.3',
+  'mlflow-skinny                      2.21.3',
+  'mpi4py                             4.0.3',
+  'mpmath                             1.3.0',
+  'msgpack                            1.1.0',
+  'msgspec                            0.19.0',
+  'multidict                          6.3.2',
+  'multiprocess                       0.70.16',
+  'mysql-connector-python             9.2.0',
+  'namex                              0.0.8',
+  'nanobind                           2.6.1',
+  'narwhals                           1.34.0',
+  'nbclassic                          1.2.0',
+  'nbclient                           0.10.2',
+  'nbconvert                          7.16.6',
+  'nbdime                             4.0.2',
+  'nbformat                           5.10.4',
+  'ndindex                            1.9.2',
+  'nest-asyncio                       1.6.0',
+  'netaddr                            1.3.0',
+  'netCDF4                            1.7.2',
+  'networkx                           3.4.2',
+  'ninja                              1.11.1.4',
+  'nltk                               3.9.1',
+  'notebook                           7.3.3',
+  'notebook_shim                      0.2.4',
+  'numba                              0.61.0',
+  'numexpr                            2.10.2',
+  'numpy                              1.26.4',
+  'nvidia-cublas-cu12                 12.4.5.8',
+  'nvidia-cuda-cupti-cu12             12.4.127',
+  'nvidia-cuda-nvrtc-cu12             12.4.127',
+  'nvidia-cuda-runtime-cu12           12.4.127',
+  'nvidia-cudnn-cu12                  9.1.0.70',
+  'nvidia-cufft-cu12                  11.2.1.3',
+  'nvidia-curand-cu12                 10.3.5.147',
+  'nvidia-cusolver-cu12               11.6.1.9',
+  'nvidia-cusparse-cu12               12.3.1.170',
+  'nvidia-cusparselt-cu12             0.6.2',
+  'nvidia-nccl-cu12                   2.21.5',
+  'nvidia-nvjitlink-cu12              12.4.127',
+  'nvidia-nvtx-cu12                   12.4.127',
+  'odfpy                              1.4.1',
+  'openai                             1.71.0',
+  'opencensus                         0.11.4',
+  'opencensus-context                 0.1.3',
+  'opencv-python                      4.11.0.86',
+  'opencv-python-headless             4.11.0.86',
+  'openpyxl                           3.1.5',
+  'opentelemetry-api                  1.31.1',
+  'opentelemetry-sdk                  1.31.1',
+  'opentelemetry-semantic-conventions 0.52b1',
+  'optree                             0.15.0',
+  'os-service-types                   1.7.0',
+  'oslo.config                        9.7.1',
+  'oslo.i18n                          6.5.1',
+  'oslo.serialization                 5.7.0',
+  'oslo.utils                         8.2.0',
+  'outlines                           0.1.11',
+  'outlines_core                      0.1.26',
+  'overrides                          7.7.0',
+  'packaging                          24.2',
+  'pandas                             2.2.3',
+  'pandocfilters                      1.5.1',
+  'papermill                          2.6.0',
+  'parso                              0.8.4',
+  'partd                              1.4.2',
+  'partial-json-parser                0.2.1.1.post5',
+  'pbr                                6.1.1',
+  'peft                               0.15.1',
+  'pexpect                            4.9.0',
+  'pillow                             11.1.0',
+  'pip                                25.0.1',
+  'platformdirs                       4.3.7',
+  'plotly                             6.0.1',
+  'pluggy                             1.5.0',
+  'pooch                              1.8.2',
+  'portalocker                        3.1.1',
+  'prometheus_client                  0.21.1',
+  'prometheus-fastapi-instrumentator  7.1.0',
+  'promise                            2.3',
+  'prompt_toolkit                     3.0.50',
+  'propcache                          0.3.1',
+  'proto-plus                         1.26.1',
+  'protobuf                           3.20.3',
+  'psutil                             7.0.0',
+  'ptyprocess                         0.7.0',
+  'pure_eval                          0.2.3',
+  'py-cpuinfo                         9.0.0',
+  'py-spy                             0.4.0',
+  'pyarrow                            19.0.1',
+  'pyasn1                             0.6.1',
+  'pyasn1_modules                     0.4.2',
+  'pybind11                           2.13.6',
+  'pycodestyle                        2.13.0',
+  'pycountry                          24.6.1',
+  'pycparser                          2.22',
+  'pydantic                           2.11.3',
+  'pydantic_core                      2.33.1',
+  'pydot                              3.0.4',
+  'pyflakes                           3.3.2',
+  'pyglet                             1.5.15',
+  'Pygments                           2.19.1',
+  'pykeops                            2.2.3',
+  'pynndescent                        0.5.13',
+  'pyogrio                            0.10.0',
+  'pyparsing                          3.2.3',
+  'pyproj                             3.7.1',
+  'pyprojroot                         0.3.0',
+  'pysqlite3                          0.5.4',
+  'pytest                             8.3.5',
+  'python-dateutil                    2.9.0.post0',
+  'python-dotenv                      1.1.0',
+  'python-json-logger                 3.3.0',
+  'python-keystoneclient              5.6.0',
+  'python-multipart                   0.0.20',
+  'python-swiftclient                 4.7.0',
+  'pytorch-lightning                  2.5.1',
+  'pytorch-pfn-extras                 0.8.2',
+  'pytz                               2025.2',
+  'PyYAML                             6.0.2',
+  'pyzmq                              26.4.0',
+  'rasterio                           1.4.3',
+  'ray                                2.43.0',
+  'referencing                        0.36.2',
+  'regex                              2024.11.6',
+  'requests                           2.32.3',
+  'retrying                           1.3.4',
+  'rfc3339-validator                  0.1.4',
+  'rfc3986                            2.0.0',
+  'rfc3986-validator                  0.1.1',
+  'rich                               14.0.0',
+  'rich-toolkit                       0.14.1',
+  'rpds-py                            0.24.0',
+  'rsa                                4.9',
+  'safetensors                        0.5.3',
+  'scikit-image                       0.25.2',
+  'scikit-learn                       1.6.1',
+  'scipy                              1.13.1',
+  'seaborn                            0.13.2',
+  'Send2Trash                         1.8.3',
+  'sentencepiece                      0.2.0',
+  'setuptools                         78.1.0',
+  'shapely                            2.1.0',
+  'shellingham                        1.5.4',
+  'simpervisor                        1.0.0',
+  'simple-parsing                     0.1.7',
+  'six                                1.17.0',
+  'sklearn-compat                     0.1.3',
+  'smart-open                         7.1.0',
+  'smmap                              5.0.2',
+  'sniffio                            1.3.1',
+  'sortedcontainers                   2.4.0',
+  'soundfile                          0.13.1',
+  'soupsieve                          2.6',
+  'soxr                               0.5.0.post1',
+  'SQLAlchemy                         2.0.40',
+  'sqlparse                           0.5.3',
+  'stack-data                         0.6.3',
+  'starlette                          0.46.1',
+  'stevedore                          5.4.1',
+  'sympy                              1.13.1',
+  'tables                             3.10.2',
+  'tabulate                           0.9.0',
+  'tblib                              3.1.0',
+  'tenacity                           9.1.2',
+  'tensorboard                        2.19.0',
+  'tensorboard-data-server            0.7.2',
+  'tensorboardX                       2.6.2.2',
+  'tensorflow-datasets                4.9.8',
+  'tensorflow-metadata                1.14.0',
+  'termcolor                          3.0.1',
+  'terminado                          0.18.1',
+  'terminaltables                     3.1.10',
+  'threadpoolctl                      3.6.0',
+  'tifffile                           2025.3.30',
+  'tiktoken                           0.9.0',
+  'timm                               1.0.15',
+  'tinycss2                           1.4.0',
+  'tokenizers                         0.21.1',
+  'toml                               0.10.2',
+  'toolz                              1.0.0',
+  'torch                              2.6.0+cu124',
+  'torch-geometric                    2.6.1',
+  'torch-tb-profiler                  0.4.3',
+  'torchaudio                         2.6.0+cu124',
+  'torchinfo                          1.8.0',
+  'torchmetrics                       1.7.1',
+  'torchvision                        0.21.0+cu124',
+  'tornado                            6.4.2',
+  'tqdm                               4.67.1',
+  'traitlets                          5.14.3',
+  'transformers                       4.51.1',
+  'triton                             3.2.0',
+  'trl                                0.16.1',
+  'typer                              0.15.2',
+  'types-python-dateutil              2.9.0.20241206',
+  'typing_extensions                  4.13.1',
+  'typing-inspection                  0.4.0',
+  'tzdata                             2025.2',
+  'umap-learn                         0.5.7',
+  'uri-template                       1.3.0',
+  'urllib3                            2.3.0',
+  'uvicorn                            0.34.0',
+  'uvloop                             0.21.0',
+  'virtualenv                         20.30.0',
+  'visdom                             0.2.4',
+  'vllm                               0.8.3',
+  'wadler_lindig                      0.1.4',
+  'watchfiles                         1.0.5',
+  'wcwidth                            0.2.13',
+  'webcolors                          24.11.1',
+  'webencodings                       0.5.1',
+  'websocket-client                   1.8.0',
+  'websockets                         15.0.1',
+  'Werkzeug                           3.0.6',
+  'wheel                              0.45.1',
+  'widgetsnbextension                 4.0.13',
+  'wrapt                              1.17.2',
+  'xformers                           0.0.29.post2',
+  'xgboost                            3.0.0',
+  'xgrammar                           0.1.17',
+  'xlwt                               1.3.0',
+  'xxhash                             3.5.0',
+  'yacs                               0.1.8',
+  'yarl                               1.19.0',
+  'zict                               3.0.0',
+  'zipp                               3.21.0',
+  'Packages listed',
+  'Setting connection variables',
+  'Setting Ray variables',
+  'Setting up Ray head',
+  'IP Head: ():8265',
+  'Starting HEAD at c3262',
+  'Setting up SSH tunnel',
+  'Reverse port forward running',
+  'Setting up Ray workers',
+  'Starting WORKER 1 at c3263',
+  '2025-04-18 12:38:41,084 - INFO - Note: detected 256 virtual cores but NumExpr set to maximum of 64, check "NUMEXPR_MAX_THREADS" environment variable.',
+  '2025-04-18 12:38:41,084 - INFO - Note: NumExpr detected 256 cores but "NUMEXPR_MAX_THREADS" not set, so enforcing safe limit of 16.',
+  '2025-04-18 12:38:41,084 - INFO - NumExpr defaulting to 16 threads.',
+  '2025-04-18 12:38:44,600 - INFO - Note: detected 256 virtual cores but NumExpr set to maximum of 64, check "NUMEXPR_MAX_THREADS" environment variable.',
+  '2025-04-18 12:38:44,600 - INFO - Note: NumExpr detected 256 cores but "NUMEXPR_MAX_THREADS" not set, so enforcing safe limit of 16.',
+  '2025-04-18 12:38:44,600 - INFO - NumExpr defaulting to 16 threads.',
+  '[2025-04-18 12:38:45,983 W 1172662 1172662] global_state_accessor.cc:429: Retrying to get node with node ID 780537062d6cf92ec0ce5c7ad9a424ed448623055e51a52a5d0d9f01',
+  '2025-04-18 12:38:41,971 INFO usage_lib.py:467 -- Usage stats collection is enabled by default without user confirmation because this terminal is detected to be non-interactive. To disable this, add `--disable-usage-stats` to the command that starts the cluster, or run the following command: `ray disable-usage-stats` before starting the cluster. See https://docs.ray.io/en/master/cluster/usage-stats.html for more details.',
+  '2025-04-18 12:38:41,971 INFO scripts.py:865 -- Local node IP: ()',
+  '2025-04-18 12:38:46,073 SUCC scripts.py:902 -- --------------------',
+  '2025-04-18 12:38:46,073 SUCC scripts.py:903 -- Ray runtime started.',
+  '2025-04-18 12:38:46,073 SUCC scripts.py:904 -- --------------------',
+  '2025-04-18 12:38:46,073 INFO scripts.py:906 -- Next steps',
+  '2025-04-18 12:38:46,073 INFO scripts.py:909 -- To add another node to this Ray cluster, run',
+  "2025-04-18 12:38:46,073 INFO scripts.py:912 --   ray start --address='():8265'",
+  '2025-04-18 12:38:46,073 INFO scripts.py:921 -- To connect to this Ray cluster:',
+  '2025-04-18 12:38:46,073 INFO scripts.py:923 -- import ray',
+  "2025-04-18 12:38:46,073 INFO scripts.py:924 -- ray.init(_node_ip_address='()')",
+  '2025-04-18 12:38:46,073 INFO scripts.py:936 -- To submit a Ray job using the Ray Jobs CLI:',
+  "2025-04-18 12:38:46,073 INFO scripts.py:937 --   RAY_ADDRESS='http://():8280' ray job submit --working-dir . -- python my_script.py",
+  '2025-04-18 12:38:46,073 INFO scripts.py:946 -- See https://docs.ray.io/en/latest/cluster/running-applications/job-submission/index.html ',
+  '2025-04-18 12:38:46,073 INFO scripts.py:950 -- for more information on submitting Ray jobs to the Ray cluster.',
+  '2025-04-18 12:38:46,073 INFO scripts.py:955 -- To terminate the Ray runtime, run',
+  '2025-04-18 12:38:46,073 INFO scripts.py:956 --   ray stop',
+  '2025-04-18 12:38:46,073 INFO scripts.py:959 -- To view the status of the cluster, use',
+  '2025-04-18 12:38:46,073 INFO scripts.py:960 --   ray status',
+  '2025-04-18 12:38:46,073 INFO scripts.py:964 -- To monitor and debug Ray, view the dashboard at ',
+  '2025-04-18 12:38:46,073 INFO scripts.py:965 --   ():8280',
+  '2025-04-18 12:38:46,073 INFO scripts.py:972 -- If connection to the dashboard fails, check your firewall settings and network configuration.',
+  '2025-04-18 12:38:46,074 INFO scripts.py:1076 -- --block',
+  '2025-04-18 12:38:46,074 INFO scripts.py:1077 -- This command will now block forever until terminated by a signal.',
+  '2025-04-18 12:38:46,074 INFO scripts.py:1080 -- Running subprocesses are monitored and a message will be printed if any of them terminate unexpectedly. Subprocesses exit with SIGTERM will be treated as graceful, thus NOT reported.',
+  '2025-04-18 12:38:45,253 INFO scripts.py:1047 -- Local node IP: ()',
+  '2025-04-18 12:38:46,998 SUCC scripts.py:1063 -- --------------------',
+  '2025-04-18 12:38:46,998 SUCC scripts.py:1064 -- Ray runtime started.',
+  '2025-04-18 12:38:46,998 SUCC scripts.py:1065 -- --------------------',
+  '2025-04-18 12:38:46,998 INFO scripts.py:1067 -- To terminate the Ray runtime, run',
+  '2025-04-18 12:38:46,998 INFO scripts.py:1068 --   ray stop',
+  '2025-04-18 12:38:46,998 INFO scripts.py:1076 -- --block',
+  '2025-04-18 12:38:46,998 INFO scripts.py:1077 -- This command will now block forever until terminated by a signal.',
+  '2025-04-18 12:38:46,998 INFO scripts.py:1080 -- Running subprocesses are monitored and a message will be printed if any of them terminate unexpectedly. Subprocesses exit with SIGTERM will be treated as graceful, thus NOT reported.',
+  'srun: Job step aborted: Waiting up to 62 seconds for job step to finish.',
+  'srun: Job step aborted: Waiting up to 62 seconds for job step to finish.',
+  'slurmstepd: error: *** STEP 4393900.2 ON c3263 CANCELLED AT 2025-04-18T12:39:37 ***',
+  'slurmstepd: error: *** STEP 4393900.1 ON c3262 CANCELLED AT 2025-04-18T12:39:37 ***',
+  'slurmstepd: error: *** JOB 4393900 ON c3262 CANCELLED AT 2025-04-18T12:39:37 ***']}
+```
+```
+mahti_file_name = mahti_logs_test['name'] + '.parquet'
+mahti_logs_df = pd.DataFrame({'rows': mahti_logs_test['rows']})
+print(mahti_file_name)
+```
+```
+mahti-run-1.parquet
+```
+```
+mahti_logs_df
+```
+```
+rows
+0	Loaded modules:
+1	Currently Loaded Modules:
+2	1) gcc/11.2.0 3) openblas/0.3.18-omp ...
+3	2) openmpi/4.1.2 4) csc-tools (S...
+4	Where:
+...	...
+482	srun: Job step aborted: Waiting up to 62 secon...
+483	srun: Job step aborted: Waiting up to 62 secon...
+484	slurmstepd: error: *** STEP 4393900.2 ON c3263...
+485	slurmstepd: error: *** STEP 4393900.1 ON c3262...
+486	slurmstepd: error: *** JOB 4393900 ON c3262 CA...
+
+487 rows × 1 columns
+```
+```
+formatted_mahti_logs_data = pyarrow_serialize_dataframe(
+    dataframe = mahti_logs_df
+)
+```
+```
+send_interaction_output = object_storage_interaction(
+    storage_client = workflow_swift_client,
+    parameters = {
+        'mode': 'send',
+        'bucket-target': 'pipeline',
+        'bucket-prefix': 'mlch',
+        'bucket-user': 'user@example.com',
+        'object-name': 'logs',
+        'path-replacers': {
+            'name': mahti_file_name
+        },
+        'path-names': [],
+        'overwrite': True
+    },
+    object_data = formatted_mahti_logs_data,
+    object_metadata = {'version': 1}
+)
+```
+```
+User object bucket: mlch-pipe-user-example-com
+Used object path: LOGS/mahti-run-1.parquet
+```
+```
+lumi_logs = format_slurm_logs(
+    file_path = '/home/()/multi-cloud-hpc-oss-mlops-platform/tutorials/integration/development/studying/logs/lumi-logs.txt'
+)
+```
+```
+lumi_logs_test = {
+    'name': 'lumi-run-1',
+    'rows': lumi_logs
+}
+
+validation_lumi_logs = Logs(**lumi_logs_test)
+
+validation_lumi_logs.model_dump()
+```
+```
+{'name': 'lumi-run-1',
+ 'rows': ['NOTE: This module uses Singularity. Some commands execute inside the container',
+  '(e.g. python3, pip3).',
+  'This module has been installed by CSC.',
+  'Documentation: https://docs.csc.fi/apps/pytorch/',
+  'Support: https://docs.csc.fi/support/contact/',
+  'Loaded modules:',
+  'Currently Loaded Modules:',
+  '  1) craype-x86-rome                        9) cray-mpich/8.1.29',
+  '  2) libfabric/1.15.2.0                    10) cray-libsci/24.03.0',
+  '  3) craype-network-ofi                    11) PrgEnv-cray/8.5.0',
+  '  4) perftools-base/24.03.0                12) ModuleLabel/label   (S)',
+  '  5) xpmem/2.8.2-1.0_5.1__g84a27a5.shasta  13) lumi-tools/24.05    (S)',
+  '  6) cce/17.0.1                            14) init-lumi/0.2       (S)',
+  '  7) craype/2.7.31.11                      15) pytorch/2.7',
+  '  8) cray-dsmml/0.3.0',
+  '  Where:',
+  '   S:  Module is Sticky, requires --force to unload or purge',
+  'Activating venv',
+  'Venv active',
+  'Installed packages',
+  'Package                                  Version',
+  '---------------------------------------- -------------------------',
+  'absl-py                                  1.4.0',
+  'accelerate                               1.7.0',
+  'affine                                   2.4.0',
+  'aiohappyeyeballs                         2.6.1',
+  'aiohttp                                  3.11.18',
+  'aiohttp-cors                             0.8.1',
+  'aiosignal                                1.3.2',
+  'airportsdata                             20250224',
+  'alembic                                  1.15.2',
+  'amdsmi                                   24.6.3+9578815',
+  'annotated-types                          0.7.0',
+  'ansicolors                               1.1.8',
+  'anyio                                    4.9.0',
+  'apex                                     1.7.0a0',
+  'argon2-cffi                              23.1.0',
+  'argon2-cffi-bindings                     21.2.0',
+  'array_record                             0.7.2',
+  'arrow                                    1.3.0',
+  'astor                                    0.8.1',
+  'asttokens                                3.0.0',
+  'async-lru                                2.0.5',
+  'async-timeout                            5.0.1',
+  'attrs                                    25.3.0',
+  'audioread                                3.0.1',
+  'autocommand                              2.2.2',
+  'awscli                                   1.40.21',
+  'babel                                    2.17.0',
+  'backports.tarfile                        1.2.0',
+  'beautifulsoup4                           4.13.4',
+  'bitsandbytes                             0.43.3.dev0',
+  'blake3                                   1.0.5',
+  'bleach                                   6.2.0',
+  'blinker                                  1.9.0',
+  'blosc2                                   3.3.3',
+  'boto3                                    1.38.22',
+  'botocore                                 1.38.22',
+  'cachetools                               5.5.2',
+  'certifi                                  2025.4.26',
+  'cffi                                     1.17.1',
+  'cftime                                   1.6.4.post1',
+  'charset-normalizer                       3.4.2',
+  'clang                                    20.1.5',
+  'click                                    8.1.8',
+  'click-plugins                            1.1.1',
+  'cligj                                    0.7.2',
+  'cloudpickle                              3.1.1',
+  'cmake                                    4.0.2',
+  'colorama                                 0.4.6',
+  'colorful                                 0.5.6',
+  'comm                                     0.2.2',
+  'compressed-tensors                       0.10.1',
+  'contourpy                                1.3.2',
+  'cycler                                   0.12.1',
+  'Cython                                   3.1.1',
+  'dask                                     2025.5.1',
+  'dask-jobqueue                            0.9.0',
+  'databricks-sdk                           0.53.0',
+  'datasets                                 3.6.0',
+  'debtcollector                            3.0.0',
+  'debugpy                                  1.8.14',
+  'decorator                                5.2.1',
+  'deepspeed                                0.17.1+2ce55057',
+  'defusedxml                               0.7.1',
+  'Deprecated                               1.2.18',
+  'depyf                                    0.18.0',
+  'diffusers                                0.33.1',
+  'dill                                     0.3.8',
+  'diskcache                                5.6.3',
+  'distlib                                  0.3.9',
+  'distributed                              2025.5.1',
+  'distro                                   1.9.0',
+  'dm-tree                                  0.1.9',
+  'dnspython                                2.7.0',
+  'docker                                   7.1.0',
+  'docstring_parser                         0.16',
+  'docutils                                 0.19',
+  'einops                                   0.8.1',
+  'email_validator                          2.2.0',
+  'entrypoints                              0.4',
+  'et_xmlfile                               2.0.0',
+  'etils                                    1.12.2',
+  'evaluate                                 0.4.3',
+  'executing                                2.2.0',
+  'faiss                                    1.11.0',
+  'fastapi                                  0.115.12',
+  'fastapi-cli                              0.0.7',
+  'fastjsonschema                           2.21.1',
+  'filelock                                 3.18.0',
+  'flash-attn                               2.7.4.post1',
+  'Flask                                    3.1.1',
+  'fonttools                                4.58.0',
+  'fqdn                                     1.5.1',
+  'frozenlist                               1.6.0',
+  'fsspec                                   2025.3.0',
+  'fvcore                                   0.1.5.post20221221',
+  'gensim                                   4.3.3',
+  'geopandas                                1.0.1',
+  'gguf                                     0.16.3',
+  'gitdb                                    4.0.12',
+  'GitPython                                3.1.44',
+  'google-api-core                          2.24.2',
+  'google-auth                              2.40.1',
+  'googleapis-common-protos                 1.70.0',
+  'gpytorch                                 1.14',
+  'graphene                                 3.4.3',
+  'graphql-core                             3.2.6',
+  'graphql-relay                            3.2.0',
+  'graphviz                                 0.20.3',
+  'greenlet                                 3.2.2',
+  'grpcio                                   1.71.0',
+  'gunicorn                                 23.0.0',
+  'gym                                      0.26.2',
+  'gym-notices                              0.0.8',
+  'h11                                      0.16.0',
+  'h5py                                     3.13.0',
+  'hf_transfer                              0.1.9',
+  'hf-xet                                   1.1.2',
+  'hiredis                                  3.1.1',
+  'hjson                                    3.1.0',
+  'httpcore                                 1.0.9',
+  'httptools                                0.6.4',
+  'httpx                                    0.28.1',
+  'huggingface-hub                          0.33.0',
+  'humanize                                 4.12.3',
+  'idna                                     3.10',
+  'imageio                                  2.37.0',
+  'imbalanced-learn                         0.13.0',
+  'immutabledict                            4.2.1',
+  'importlib_metadata                       8.0.0',
+  'importlib_resources                      6.5.2',
+  'inflect                                  7.3.1',
+  'iniconfig                                2.1.0',
+  'inquirerpy                               0.3.4',
+  'interegular                              0.3.3',
+  'iopath                                   0.1.10',
+  'ipykernel                                6.29.5',
+  'ipython                                  9.2.0',
+  'ipython-genutils                         0.2.0',
+  'ipython_pygments_lexers                  1.1.1',
+  'ipywidgets                               8.1.7',
+  'iso8601                                  2.1.0',
+  'isoduration                              20.11.0',
+  'itsdangerous                             2.2.0',
+  'jaraco.collections                       5.1.0',
+  'jaraco.context                           5.3.0',
+  'jaraco.functools                         4.0.1',
+  'jaraco.text                              3.12.1',
+  'jaxtyping                                0.3.2',
+  'jedi                                     0.19.2',
+  'Jinja2                                   3.1.6',
+  'jiter                                    0.10.0',
+  'jmespath                                 1.0.1',
+  'joblib                                   1.5.0',
+  'json5                                    0.12.0',
+  'jsonpatch                                1.33',
+  'jsonpointer                              3.0.0',
+  'jsonschema                               4.23.0',
+  'jsonschema-specifications                2025.4.1',
+  'jupyter_client                           8.6.3',
+  'jupyter_core                             5.7.2',
+  'jupyter-events                           0.12.0',
+  'jupyter-lsp                              2.2.5',
+  'jupyter_server                           2.16.0',
+  'jupyter-server-mathjax                   0.2.6',
+  'jupyter_server_terminals                 0.5.3',
+  'jupyterlab                               4.4.2',
+  'jupyterlab_git                           0.51.1',
+  'jupyterlab_pygments                      0.3.0',
+  'jupyterlab_server                        2.27.3',
+  'jupyterlab_widgets                       3.0.15',
+  'jupytext                                 1.17.1',
+  'kagglehub                                0.3.12',
+  'keopscore                                2.3',
+  'keras                                    3.10.0',
+  'keras-core                               0.1.7',
+  'keras-cv                                 0.9.0',
+  'keystoneauth1                            5.11.0',
+  'kiwisolver                               1.4.8',
+  'lark                                     1.2.2',
+  'lazy_loader                              0.4',
+  'libnacl                                  2.1.0',
+  'librosa                                  0.11.0',
+  'lightning                                2.5.1.post0',
+  'lightning-utilities                      0.14.3',
+  'linear-operator                          0.6',
+  'lion-pytorch                             0.2.3',
+  'lit                                      18.1.8',
+  'llguidance                               0.7.21',
+  'llvmlite                                 0.44.0',
+  'lm-format-enforcer                       0.10.11',
+  'lmdb                                     1.6.2',
+  'locket                                   1.0.0',
+  'lxml                                     5.4.0',
+  'Mako                                     1.3.10',
+  'Markdown                                 3.8',
+  'markdown-it-py                           3.0.0',
+  'MarkupSafe                               3.0.2',
+  'matplotlib                               3.9.4',
+  'matplotlib-inline                        0.1.7',
+  'mdit-py-plugins                          0.4.2',
+  'mdurl                                    0.1.2',
+  'mistral_common                           1.5.5',
+  'mistune                                  3.1.3',
+  'ml_dtypes                                0.5.1',
+  'mlflow                                   2.22.0',
+  'mlflow-skinny                            2.22.0',
+  'more-itertools                           10.3.0',
+  'mpi4py                                   4.0.3',
+  'mpmath                                   1.3.0',
+  'msgpack                                  1.1.0',
+  'msgspec                                  0.19.0',
+  'multidict                                6.4.4',
+  'multiprocess                             0.70.16',
+  'mysql-connector-python                   9.3.0',
+  'namex                                    0.0.9',
+  'nbclassic                                1.3.1',
+  'nbclient                                 0.10.2',
+  'nbconvert                                7.16.6',
+  'nbdime                                   4.0.2',
+  'nbformat                                 5.10.4',
+  'ndindex                                  1.9.2',
+  'nest-asyncio                             1.6.0',
+  'netaddr                                  1.3.0',
+  'netCDF4                                  1.7.2',
+  'networkx                                 3.4.2',
+  'ninja                                    1.11.1.4',
+  'nltk                                     3.9.1',
+  'notebook                                 7.4.2',
+  'notebook_shim                            0.2.4',
+  'numba                                    0.61.2',
+  'numexpr                                  2.10.2',
+  'numpy                                    1.26.4',
+  'nvidia-nccl-cu12                         2.26.5',
+  'odfpy                                    1.4.1',
+  'openai                                   1.79.0',
+  'opencensus                               0.11.4',
+  'opencensus-context                       0.1.3',
+  'opencv-python                            4.11.0.86',
+  'opencv-python-headless                   4.11.0.86',
+  'openpyxl                                 3.1.5',
+  'opentelemetry-api                        1.26.0',
+  'opentelemetry-exporter-otlp              1.26.0',
+  'opentelemetry-exporter-otlp-proto-common 1.26.0',
+  'opentelemetry-exporter-otlp-proto-grpc   1.26.0',
+  'opentelemetry-exporter-otlp-proto-http   1.26.0',
+  'opentelemetry-proto                      1.26.0',
+  'opentelemetry-sdk                        1.26.0',
+  'opentelemetry-semantic-conventions       0.47b0',
+  'opentelemetry-semantic-conventions-ai    0.4.9',
+  'optree                                   0.15.0',
+  'os-service-types                         1.7.0',
+  'oslo.config                              9.8.0',
+  'oslo.i18n                                6.5.1',
+  'oslo.serialization                       5.7.0',
+  'oslo.utils                               9.0.0',
+  'outlines                                 0.1.11',
+  'outlines_core                            0.1.26',
+  'overrides                                7.7.0',
+  'packaging                                24.2',
+  'pandas                                   2.2.3',
+  'pandocfilters                            1.5.1',
+  'papermill                                2.6.0',
+  'parso                                    0.8.4',
+  'partd                                    1.4.2',
+  'partial-json-parser                      0.2.1.1.post5',
+  'pbr                                      6.1.1',
+  'peft                                     0.15.2',
+  'pexpect                                  4.9.0',
+  'pfzy                                     0.3.4',
+  'pillow                                   11.2.1',
+  'pip                                      22.0.2',
+  'platformdirs                             4.3.8',
+  'pluggy                                   1.6.0',
+  'pooch                                    1.8.2',
+  'portalocker                              3.1.1',
+  'prometheus_client                        0.22.0',
+  'prometheus-fastapi-instrumentator        7.1.0',
+  'promise                                  2.3',
+  'prompt_toolkit                           3.0.51',
+  'propcache                                0.3.1',
+  'proto-plus                               1.26.1',
+  'protobuf                                 4.25.7',
+  'psutil                                   7.0.0',
+  'ptyprocess                               0.7.0',
+  'pure_eval                                0.2.3',
+  'py-cpuinfo                               9.0.0',
+  'py-spy                                   0.4.0',
+  'pyarrow                                  19.0.1',
+  'pyasn1                                   0.6.1',
+  'pyasn1_modules                           0.4.2',
+  'pybind11                                 2.13.6',
+  'pycodestyle                              2.13.0',
+  'pycountry                                24.6.1',
+  'pycparser                                2.22',
+  'pydantic                                 2.11.4',
+  'pydantic_core                            2.33.2',
+  'pydot                                    4.0.0',
+  'pyflakes                                 3.3.2',
+  'Pygments                                 2.19.1',
+  'pykeops                                  2.3',
+  'pynndescent                              0.5.13',
+  'pyogrio                                  0.11.0',
+  'PyOpenGL                                 3.1.5',
+  'pyparsing                                3.2.3',
+  'pyproj                                   3.7.1',
+  'pyprojroot                               0.3.0',
+  'pysqlite3                                0.5.4',
+  'pytest                                   8.3.5',
+  'pytest-asyncio                           0.26.0',
+  'python-dateutil                          2.9.0.post0',
+  'python-dotenv                            1.1.0',
+  'python-json-logger                       3.3.0',
+  'python-keystoneclient                    5.6.0',
+  'python-multipart                         0.0.20',
+  'python-swiftclient                       4.7.0',
+  'pytorch-lightning                        2.5.1.post0',
+  'pytorch-triton-rocm                      3.3.1',
+  'pytz                                     2025.2',
+  'PyYAML                                   6.0.2',
+  'pyzmq                                    26.4.0',
+  'rasterio                                 1.4.3',
+  'ray                                      2.44.1',
+  'redis                                    6.1.0',
+  'referencing                              0.36.2',
+  'regex                                    2024.11.6',
+  'requests                                 2.32.3',
+  'rfc3339-validator                        0.1.4',
+  'rfc3986                                  2.0.0',
+  'rfc3986-validator                        0.1.1',
+  'rich                                     14.0.0',
+  'rich-toolkit                             0.14.6',
+  'rpds-py                                  0.25.0',
+  'rsa                                      4.7.2',
+  'runai-model-streamer                     0.11.0',
+  'runai-model-streamer-s3                  0.11.0',
+  's3transfer                               0.13.0',
+  'safetensors                              0.5.3',
+  'scikit-image                             0.25.2',
+  'scikit-learn                             1.6.1',
+  'scipy                                    1.14.1',
+  'seaborn                                  0.13.2',
+  'Send2Trash                               1.8.3',
+  'sentencepiece                            0.2.0',
+  'setuptools                               59.6.0',
+  'shapely                                  2.1.1',
+  'shellingham                              1.5.4',
+  'simple-parsing                           0.1.7',
+  'six                                      1.17.0',
+  'sklearn-compat                           0.1.3',
+  'smart-open                               7.1.0',
+  'smmap                                    5.0.2',
+  'sniffio                                  1.3.1',
+  'sortedcontainers                         2.4.0',
+  'soundfile                                0.13.1',
+  'soupsieve                                2.7',
+  'soxr                                     0.5.0.post1',
+  'SQLAlchemy                               2.0.41',
+  'sqlparse                                 0.5.3',
+  'stack-data                               0.6.3',
+  'starlette                                0.46.2',
+  'stevedore                                5.4.1',
+  'sympy                                    1.14.0',
+  'tables                                   3.10.2',
+  'tabulate                                 0.9.0',
+  'tblib                                    3.1.0',
+  'tenacity                                 9.1.2',
+  'tensorboard                              2.19.0',
+  'tensorboard-data-server                  0.7.2',
+  'tensorboardX                             2.6.2.2',
+  'tensorflow-datasets                      4.9.8',
+  'tensorflow-metadata                      1.14.0',
+  'tensorizer                               2.9.3',
+  'termcolor                                3.1.0',
+  'terminado                                0.18.1',
+  'threadpoolctl                            3.6.0',
+  'tifffile                                 2025.5.10',
+  'tiktoken                                 0.9.0',
+  'timm                                     1.0.15',
+  'tinycss2                                 1.4.0',
+  'tokenizers                               0.21.1',
+  'toml                                     0.10.2',
+  'tomli                                    2.0.1',
+  'toolz                                    1.0.0',
+  'torch                                    2.7.1+rocm6.2.4',
+  'torch-tb-profiler                        0.4.3',
+  'torchaudio                               2.7.1+rocm6.2.4',
+  'torchinfo                                1.8.0',
+  'torchmetrics                             1.7.1',
+  'torchvision                              0.22.1+rocm6.2.4',
+  'tornado                                  6.5',
+  'tqdm                                     4.67.1',
+  'traitlets                                5.14.3',
+  'transformers                             4.52.4',
+  'triton                                   3.3.0',
+  'trl                                      0.17.0',
+  'typeguard                                4.3.0',
+  'typer                                    0.15.4',
+  'types-python-dateutil                    2.9.0.20250516',
+  'typing_extensions                        4.13.2',
+  'typing-inspection                        0.4.0',
+  'tzdata                                   2025.2',
+  'umap-learn                               0.5.7',
+  'uri-template                             1.3.0',
+  'urllib3                                  2.4.0',
+  'uvicorn                                  0.34.2',
+  'uvloop                                   0.21.0',
+  'virtualenv                               20.31.2',
+  'visdom                                   0.2.4',
+  'vllm                                     0.9.1+rocm624',
+  'wadler_lindig                            0.1.6',
+  'watchfiles                               1.0.5',
+  'wcwidth                                  0.2.13',
+  'webcolors                                24.11.1',
+  'webencodings                             0.5.1',
+  'websocket-client                         1.8.0',
+  'websockets                               15.0.1',
+  'Werkzeug                                 3.1.3',
+  'wheel                                    0.43.0',
+  'widgetsnbextension                       4.0.14',
+  'wrapt                                    1.17.2',
+  'xformers                                 0.0.31+39addc86.d20250521',
+  'xgboost                                  3.0.1',
+  'xgrammar                                 0.1.19',
+  'xlwt                                     1.3.0',
+  'xxhash                                   3.5.0',
+  'yacs                                     0.1.8',
+  'yarl                                     1.20.0',
+  'zict                                     3.0.0',
+  'zipp                                     3.21.0',
+  'Packages listed',
+  'Setting connection variables',
+  'Setting Ray ports',
+  'Setting Ray settings',
+  'Setting up Ray head',
+  'IP Head: ():8050',
+  'Starting HEAD at nid002440',
+  'Setting up SSH tunnel for head dash',
+  'Setting up Ray workers',
+  'Starting WORKER 1 at nid002441',
+  'Starting wait',
+  '2025-11-21 14:20:11,935 INFO usage_lib.py:467 -- Usage stats collection is enabled by default without user confirmation because this terminal is detected to be non-interactive. To disable this, add `--disable-usage-stats` to the command that starts the cluster, or run the following command: `ray disable-usage-stats` before starting the cluster. See https://docs.ray.io/en/master/cluster/usage-stats.html for more details.',
+  '2025-11-21 14:20:11,936 INFO scripts.py:861 -- Local node IP: ()',
+  '2025-11-21 14:20:16,017 SUCC scripts.py:897 -- --------------------',
+  '2025-11-21 14:20:16,017 SUCC scripts.py:898 -- Ray runtime started.',
+  '2025-11-21 14:20:16,017 SUCC scripts.py:899 -- --------------------',
+  '2025-11-21 14:20:16,017 INFO scripts.py:901 -- Next steps',
+  '2025-11-21 14:20:16,018 INFO scripts.py:904 -- To add another node to this Ray cluster, run',
+  "2025-11-21 14:20:16,018 INFO scripts.py:907 --   ray start --address='():8050'",
+  '2025-11-21 14:20:16,018 INFO scripts.py:916 -- To connect to this Ray cluster:',
+  '2025-11-21 14:20:16,018 INFO scripts.py:918 -- import ray',
+  "2025-11-21 14:20:16,018 INFO scripts.py:919 -- ray.init(_node_ip_address='()')",
+  '2025-11-21 14:20:16,018 INFO scripts.py:931 -- To submit a Ray job using the Ray Jobs CLI:',
+  "2025-11-21 14:20:16,018 INFO scripts.py:932 --   RAY_ADDRESS='http://():8265' ray job submit --working-dir . -- python my_script.py",
+  '2025-11-21 14:20:16,018 INFO scripts.py:941 -- See https://docs.ray.io/en/latest/cluster/running-applications/job-submission/index.html ',
+  '2025-11-21 14:20:16,018 INFO scripts.py:945 -- for more information on submitting Ray jobs to the Ray cluster.',
+  '2025-11-21 14:20:16,018 INFO scripts.py:950 -- To terminate the Ray runtime, run',
+  '2025-11-21 14:20:16,018 INFO scripts.py:951 --   ray stop',
+  '2025-11-21 14:20:16,018 INFO scripts.py:954 -- To view the status of the cluster, use',
+  '2025-11-21 14:20:16,018 INFO scripts.py:955 --   ray status',
+  '2025-11-21 14:20:16,018 INFO scripts.py:959 -- To monitor and debug Ray, view the dashboard at ',
+  '2025-11-21 14:20:16,018 INFO scripts.py:960 --   ():8265',
+  '2025-11-21 14:20:16,018 INFO scripts.py:967 -- If connection to the dashboard fails, check your firewall settings and network configuration.',
+  '2025-11-21 14:20:16,018 INFO scripts.py:1071 -- --block',
+  '2025-11-21 14:20:16,018 INFO scripts.py:1072 -- This command will now block forever until terminated by a signal.',
+  '2025-11-21 14:20:16,018 INFO scripts.py:1075 -- Running subprocesses are monitored and a message will be printed if any of them terminate unexpectedly. Subprocesses exit with SIGTERM will be treated as graceful, thus NOT reported.',
+  '[2025-11-21 14:20:18,248 W 35846 35846] global_state_accessor.cc:429: Retrying to get node with node ID cb8468e80d9ea04b037d84c569b963ee914abc8b8ac933b41d4d852a',
+  '[2025-11-21 14:20:19,249 W 35846 35846] global_state_accessor.cc:429: Retrying to get node with node ID cb8468e80d9ea04b037d84c569b963ee914abc8b8ac933b41d4d852a',
+  '2025-11-21 14:20:17,994 INFO scripts.py:1042 -- Local node IP: ()',
+  '2025-11-21 14:20:20,269 SUCC scripts.py:1058 -- --------------------',
+  '2025-11-21 14:20:20,269 SUCC scripts.py:1059 -- Ray runtime started.',
+  '2025-11-21 14:20:20,269 SUCC scripts.py:1060 -- --------------------',
+  '2025-11-21 14:20:20,269 INFO scripts.py:1062 -- To terminate the Ray runtime, run',
+  '2025-11-21 14:20:20,269 INFO scripts.py:1063 --   ray stop',
+  '2025-11-21 14:20:20,269 INFO scripts.py:1071 -- --block',
+  '2025-11-21 14:20:20,270 INFO scripts.py:1072 -- This command will now block forever until terminated by a signal.',
+  '2025-11-21 14:20:20,270 INFO scripts.py:1075 -- Running subprocesses are monitored and a message will be printed if any of them terminate unexpectedly. Subprocesses exit with SIGTERM will be treated as graceful, thus NOT reported.',
+  'srun: Job step aborted: Waiting up to 32 seconds for job step to finish.',
+  'srun: Job step aborted: Waiting up to 32 seconds for job step to finish.',
+  'slurmstepd: error: *** STEP 14838873.1 ON nid002440 CANCELLED AT 2025-11-21T14:20:55 ***',
+  'slurmstepd: error: *** JOB 14838873 ON nid002440 CANCELLED AT 2025-11-21T14:20:55 ***']}
+```
+```
+lumi_file_name = lumi_logs_test['name'] + '.parquet'
+lumi_logs_df = pd.DataFrame({'rows': lumi_logs_test['rows']})
+print(lumi_file_name)
+```
+```
+lumi-run-1.parquet
+```
+```
+lumi_logs_df
+```
+```
+	rows
+0	NOTE: This module uses Singularity. Some comma...
+1	(e.g. python3, pip3).
+2	This module has been installed by CSC.
+3	Documentation: https://docs.csc.fi/apps/pytorch/
+4	Support: https://docs.csc.fi/support/contact/
+...	...
+497	2025-11-21 14:20:20,270 INFO scripts.py:1075 -...
+498	srun: Job step aborted: Waiting up to 32 secon...
+499	srun: Job step aborted: Waiting up to 32 secon...
+500	slurmstepd: error: *** STEP 14838873.1 ON nid0...
+501	slurmstepd: error: *** JOB 14838873 ON nid0024...
+
+502 rows × 1 columns
+```
+```
+formatted_lumi_logs_data = pyarrow_serialize_dataframe(
+    dataframe = lumi_logs_df
+)
+```
+```
+send_interaction_output = object_storage_interaction(
+    storage_client = workflow_swift_client,
+    parameters = {
+        'mode': 'send',
+        'bucket-target': 'pipeline',
+        'bucket-prefix': 'mlch',
+        'bucket-user': 'user@example.com',
+        'object-name': 'logs',
+        'path-replacers': {
+            'name': lumi_file_name
+        },
+        'path-names': [],
+        'overwrite': True
+    },
+    object_data = formatted_lumi_logs_data,
+    object_metadata = {'version': 1}
+)
+```
+```
+User object bucket: mlch-pipe-user-example-com
+Used object path: LOGS/lumi-run-1.parquet
+```
+Now, if you go into https://pouta.csc.fi/, you should see this container and file appear by doing the following:
+- Click object storage
+- Click containers
+- Click mlch-pipe-user-example-com
+- Click LOGS
+
+We can get the dataframes with the following way:
+```
+get_interaction_output = object_storage_interaction(
+    storage_client = workflow_swift_client,
+    parameters = {
+        'mode': 'get',
+        'bucket-target': 'pipeline',
+        'bucket-prefix': 'mlch',
+        'bucket-user': 'user@example.com',
+        'object-name': 'logs',
+        'path-replacers': {
+            'name': puhti_file_name
+        },
+        'path-names': [],
+        'overwrite': True
+    },
+    object_data = None,
+    object_metadata = None
+)
+```
+```
+User object bucket: mlch-pipe-user-example-com
+Used object path: LOGS/puhti-run-1.parquet
+```
+```
+formatted_stored_puhti_logs = pyarrow_deserialize_dataframe(serialized_dataframe = get_interaction_output[0])
+stored_general_metadata = get_interaction_output[1]
+stored_custom_metadata = get_interaction_output[2]
+```
+```
+formatted_stored_puhti_logs
+```
+```
+	rows
+0	Loaded modules:
+1	Currently Loaded Modules:
+2	1) gcc/11.3.0 3) openmpi/4....
+3	2) intel-oneapi-mkl/2022.1.0 4) csc-tools ...
+4	Where:
+...	...
+492	srun: Job step aborted: Waiting up to 62 secon...
+493	srun: Job step aborted: Waiting up to 62 secon...
+494	slurmstepd: error: *** STEP 27587022.2 ON r02c...
+495	slurmstepd: error: *** JOB 27587022 ON r02c17 ...
+496	slurmstepd: error: *** STEP 27587022.1 ON r02c...
+
+497 rows × 1 columns
+```
+```
+stored_custom_metadata 
+```
+```
+{'version': 1}
+```
+```
+get_interaction_output = object_storage_interaction(
+    storage_client = workflow_swift_client,
+    parameters = {
+        'mode': 'get',
+        'bucket-target': 'pipeline',
+        'bucket-prefix': 'mlch',
+        'bucket-user': 'user@example.com',
+        'object-name': 'logs',
+        'path-replacers': {
+            'name': mahti_file_name
+        },
+        'path-names': [],
+        'overwrite': True
+    },
+    object_data = None,
+    object_metadata = None
+)
+```
+```
+User object bucket: mlch-pipe-user-example-com
+Used object path: LOGS/mahti-run-1.parque
+```
+```
+formatted_stored_mahti_logs = pyarrow_deserialize_dataframe(serialized_dataframe = get_interaction_output[0])
+stored_general_metadata = get_interaction_output[1]
+stored_custom_metadata = get_interaction_output[2]
+```
+```
+formatted_stored_mahti_logs
+```
 ```
 
+rows
+0	Loaded modules:
+1	Currently Loaded Modules:
+2	1) gcc/11.2.0 3) openblas/0.3.18-omp ...
+3	2) openmpi/4.1.2 4) csc-tools (S...
+4	Where:
+...	...
+482	srun: Job step aborted: Waiting up to 62 secon...
+483	srun: Job step aborted: Waiting up to 62 secon...
+484	slurmstepd: error: *** STEP 4393900.2 ON c3263...
+485	slurmstepd: error: *** STEP 4393900.1 ON c3262...
+486	slurmstepd: error: *** JOB 4393900 ON c3262 CA...
+
+487 rows × 1 columns
+```
+```
+stored_custom_metadata
+```
+```
+{'version': 1}
+```
+```
+get_interaction_output = object_storage_interaction(
+    storage_client = workflow_swift_client,
+    parameters = {
+        'mode': 'get',
+        'bucket-target': 'pipeline',
+        'bucket-prefix': 'mlch',
+        'bucket-user': 'user@example.com',
+        'object-name': 'logs',
+        'path-replacers': {
+            'name': lumi_file_name
+        },
+        'path-names': [],
+        'overwrite': True
+    },
+    object_data = None,
+    object_metadata = None
+)
+```
+```
+User object bucket: mlch-pipe-user-example-com
+Used object path: LOGS/lumi-run-1.parquet
+```
+```
+formatted_stored_lumi_logs = pyarrow_deserialize_dataframe(serialized_dataframe = get_interaction_output[0])
+stored_general_metadata = get_interaction_output[1]
+stored_custom_metadata = get_interaction_output[2]
+```
+```
+formatted_stored_lumi_logs
+```
 ```
 
-```
+rows
+0	NOTE: This module uses Singularity. Some comma...
+1	(e.g. python3, pip3).
+2	This module has been installed by CSC.
+3	Documentation: https://docs.csc.fi/apps/pytorch/
+4	Support: https://docs.csc.fi/support/contact/
+...	...
+497	2025-11-21 14:20:20,270 INFO scripts.py:1075 -...
+498	srun: Job step aborted: Waiting up to 32 secon...
+499	srun: Job step aborted: Waiting up to 32 secon...
+500	slurmstepd: error: *** STEP 14838873.1 ON nid0...
+501	slurmstepd: error: *** JOB 14838873 ON nid0024...
 
+502 rows × 1 columns
 ```
-
 ```
-
+stored_custom_metadata
 ```
-
 ```
-
+{'version': 1}
 ```
-
-```
-
-```
-
-```
-
-```
-
-```
-
-```
-
-```
-
-```
-
-```
-
-```
-
-```
-
-```
-
-```
-
-```
-
-```
-
-```
-
-```
-
-```
-
-```
-
-```
-
-```
-
-```
-
-```
-
-```
-
-```
-
-```
-
-```
-
-```
-
-```
-
-```
-
-```
-
-```
-
-```
-
-```
-
-```
-
-```
-
-```
-
-```
-
-```
-
+With this we finally have the necessery understanding of storing data into Allas with interaction functions with pydantic standardized objects. Be aware that ML has different storage formats, which will most likely require you to modify the interaction and swift code to enable easier transfers of data. From this point forward we will start to use abstraction methods that enable us to hide the long object models and storage interaction functions due to them taking a lot of rows, which results in worse development and user experience. Both of these are the main problems we need to constantly find better ways to solve to ensure smoother integration and use of distributed systems.
