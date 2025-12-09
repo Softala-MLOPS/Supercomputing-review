@@ -69,7 +69,7 @@ At the time of making these instructions (9.12.2025), we have unfortunately not 
 
 ## About Volumes on virtual machine
 
-- In the previous case, we have already created a volume when we created the VM. It will appear as "vda" when you use the command `lsblk`.
+- In the previous case, we have already created a volume when we created the VM. It will appear as "vda" when you use the command `lsblk` in the terminal.
 - If the virtual machine was an electrical appliance like a digital camera or a phone, you can think of volume as the memory card
 - The volume is needed so that whatever we do inside the virtual machine will be saved. Otherwise, every time we exit the VM, we will need to start over.
 -  In case you forgot to add the volume or just need some extra space, we can manually attach a separate volume, which will appear as "vdb", "vdc" and so on. In this case, we will also need to format, mount and add to fstab-file because new volumes do not have a file system on default. Here's how to do it:
@@ -77,7 +77,7 @@ At the time of making these instructions (9.12.2025), we have unfortunately not 
 1. In the cPouta Dashboard, go to Volumes > Volumes and create a new one
 2. Give it a suitable name and description
 3. In Volume Source, choose Image
-4. In "Use image as a source", choose "Ubuntu-22.04 (2.2 GB)"
+4. In "Use image as a source", choose "Ubuntu-22.04 (2.2 GB)" or newer
 5. Give it a size you want
 6. Create it
 7. Go back to Compute > Instances, press the down arrow next to "Create Snapshot" and choose "Attach Volume"
@@ -105,6 +105,10 @@ There's a chance you may encounter several problems during the installation.
 
 Here's a document with some of the known problems considering [Kind, kustomize etc.](https://github.com/Softala-MLOPS/Supercomputing-review/blob/main/Installation.md) and some possible solutions
 
+### Pip3 won't install
+
+If Pip3 cannot be used due to global environment issues, you may need to install pipx instead. You can do it with `sudo apt install pipx`
+
 ### Jupyter Notebook can't be installed
 
 If installing Jupyter notebook doesn't work because of global environment issues, you can use these instead:
@@ -113,10 +117,6 @@ If installing Jupyter notebook doesn't work because of global environment issues
 sudo apt update
 sudo apt install jupyter-notebook
 ```
-
-### Pip3 won't install
-
-If Pip3 cannot be used due to global environment issues, you may need to install pipx instead.
 
 ### Docker can't find images in the installation
 
