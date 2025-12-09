@@ -4,6 +4,14 @@ This document contains instructions based on [tutorial part 5](https://github.co
 
 ## Index
 
+- [Notes](#Notes)
+- [Pre-installments](#Pre-installments)
+- [Create a project in CSC](#Create-a-project-in-CSC)
+- [Create cPouta virtual machine](#Create-cPouta-virtual-machine)
+- [About Volumes on virtual machine](#About-Volumes-on-virtual-machine)
+- [Installing prerequisites in virtual machine](#Installing-prerequisites-in-virtual-machine)
+- [Troubleshooting](#Troubleshooting)
+
 ## Notes
 
 At the time of making these instructions (9.12.2025), we have unfortunately not found an effective way to fix any mistakes done while creating the virtual machine. This means that if you get any of the steps wrong, you may need to delete everything and start over. Even if you try to manually delete something specific and install it again, the system may recognize the leftover files and refuse to proceed as intended. I know, it sucks.
@@ -105,6 +113,10 @@ If installing Jupyter notebook doesn't work because of global environment issues
 sudo apt update
 sudo apt install jupyter-notebook
 ```
+
+### Pip3 won't install
+
+If Pip3 cannot be used due to global environment issues, you may need to install pipx instead.
 
 ### Docker can't find images in the installation
 
