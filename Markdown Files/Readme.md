@@ -1,1 +1,3 @@
-This Folder will hold all of the information in the notebook files as markdown files in the future.
+# Markdown Files
+This Folder holds all of the information in the notebook files created in the original repository's studying section converted to markdown files for easier reading experience. The original directory with the notebook files can be found [here](https://github.com/K123AsJ0k1/multi-cloud-hpc-oss-mlops-platform/tree/studying/tutorials/integration/studying).<br></br>
+Right now parts 1 tghrough 8 are available, and more will be added as they are created.<br></br>

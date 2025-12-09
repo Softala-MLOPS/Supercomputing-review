@@ -1,0 +1,77 @@
+# Summary
+This document contains summaries written by Jukaleki and Tiriele in in the autumn semester of 2025. Summaries are based on the notebook files created in the original repository's studying section. The original directory with the notebook files can be found [here](https://github.com/K123AsJ0k1/multi-cloud-hpc-oss-mlops-platform/tree/studying/tutorials/integration/studying).<br></br>
+This summary is created to give a quick overview of what each part of the tutorial contains.<br></br>
+
+- [Move to part 1](##part-1)
+- [Move to part 2](##part-2)
+- [Move to part 3](##part-3)
+- [Move to part 4](##part-4)
+- [Move to part 5](##part-5)
+- [Move to part 6](##part-6)
+- [Move to part 7](##part-7)
+- [Move to part 8](##part-8)
+- [Part 9](##part-9) coming soon!
+- [Part 10](##part-10) coming soon!
+
+## Part 1
+[notebook source](https://github.com/K123AsJ0k1/multi-cloud-hpc-oss-mlops-platform/blob/studying/tutorials/integration/studying/tutorial_for_integration_part_1.ipynb)<br>
+[markdown source](https://github.com/Softala-MLOPS/Supercomputing-review/blob/main/Markdown%20Files/tutorial_for_integration_part_1.md)
+- Defining concepts being used and the terminology behind every important concept
+- Tells the meaning behind the documentation
+- Explained why Python was chosen as the coding language
+- Explaining the use of JupyterLab
+- Explaining the use of Pydantic
+- Explaining the use of YAML
+- Docker setup
+
+## Part 2
+[notebook source](https://github.com/K123AsJ0k1/multi-cloud-hpc-oss-mlops-platform/blob/studying/tutorials/integration/studying/tutorial_for_integration_part_2.ipynb)<br>
+[markdown source](https://github.com/Softala-MLOPS/Supercomputing-review/blob/main/Markdown%20Files/tutorial_for_integration_part_2.md)
+- Explanation of FastAPI and how Submitter and Kubernetes Forwarder communicate through the Uvicorn server
+- Explanation of the FastApi logs, application file structure and important parts of the fastApi. Document also tells how APIRouters and their routes work
+- Docker Compose explained and how to use it
+- Redis explained and how to use it
+- Examples of using the created/stored Redis pickled data 
+
+## Part 3
+[notebook source](https://github.com/K123AsJ0k1/multi-cloud-hpc-oss-mlops-platform/blob/studying/tutorials/integration/studying/tutorial_for_integration_part_3.ipynb)<br>
+[markdown source](https://github.com/Softala-MLOPS/Supercomputing-review/blob/main/Markdown%20Files/tutorial_for_integration_part_3.md)
+- Celery with Redis works as a message broker, automating interactions between separate containers and systems
+- Flower enables easier monitoring and debugging of Celery tasks
+- Celery Beat enables scheduling of Celery tasks
+- Explaining the use of Microservice Architectures
+
+## Part 4
+[notebook source](https://github.com/K123AsJ0k1/multi-cloud-hpc-oss-mlops-platform/blob/studying/tutorials/integration/studying/tutorial_for_integration_part_4.ipynb)<br>
+[markdown source](https://github.com/Softala-MLOPS/Supercomputing-review/blob/main/Markdown%20Files/tutorial_for_integration_part_4.md)
+- Apache Airflow is used as a platform to programmatically monitor workflows. We can also create and schedule the workflows with it.
+- The workflow blueprint are called DAGs and they are run similarly to kubeflow pipelines. When the workflow develops, we can modity the Submitter and Forwarder automation by modifying the DAGs.
+- TriggerDagRUnOperator is a operator that we can use to create a complex DAG that triggers smaller DAGs by defining the sub DAGs.
+- Hooks in Airflow are high-level interfaces to external platforms that remove the need to write low-level code.
+- Most of the documentation is showing the logs and code in practice that is necessary for the creation of the Airflow integration.
+
+## Part 5
+[notebook source](https://github.com/K123AsJ0k1/multi-cloud-hpc-oss-mlops-platform/blob/studying/tutorials/integration/studying/tutorial_for_integration_part_5.ipynb)<br>
+[markdown source](https://github.com/Softala-MLOPS/Supercomputing-review/blob/main/Markdown%20Files/tutorial_for_integration_part_5.md)
+- Configuring SSH connection for easier use
+- Setting up cPouta virtual machine
+- Setting up OSS Platform
+- Explains the use of Kubernetes in Docker and what happens during installation
+- Example of installing GPU Ray with Helm charts
+- Setting up YAML files if suitable helm chart doesn't exist
+- Examples of adding applications to OSS
+- Usage of Istio service mesh to handle outside connections, Kiali to handle network debugging and Openstack security groups to handle restricted access
+
+## Part 6
+[notebook source](https://github.com/K123AsJ0k1/multi-cloud-hpc-oss-mlops-platform/blob/studying/tutorials/integration/studying/tutorial_for_integration_part_6.ipynb)<br>
+[markdown source](https://github.com/Softala-MLOPS/Supercomputing-review/blob/main/Markdown%20Files/tutorial_for_integration_part_6.md)
+- Setting up local Ray cluster
+- Ray jobs
+
+## Part 7
+[notebook source](https://github.com/K123AsJ0k1/multi-cloud-hpc-oss-mlops-platform/blob/studying/tutorials/integration/studying/tutorial_for_integration_part_7.ipynb)<br>
+[markdown source](https://github.com/Softala-MLOPS/Supercomputing-review/blob/main/Markdown%20Files/tutorial_for_integration_part_7.md)
+
+## Part 8
+[notebook source](https://github.com/K123AsJ0k1/multi-cloud-hpc-oss-mlops-platform/blob/studying/tutorials/integration/studying/tutorial_for_integration_part_8.ipynb)<br>
+[markdown source](https://github.com/Softala-MLOPS/Supercomputing-review/blob/main/Markdown%20Files/tutorial_for_integration_part_8.md)
