@@ -5,9 +5,18 @@ This jupyter notebook goes through the basic ideas with practical examples for i
 ## Index
 
 - [CSC Supercomputers](#CSC-Supercomputers)
-- [Account use](#Account Use)
-- [SSH Key Management](#SSH-Key-Management)
-- 
+	- [Account use](#Account-Use)
+	- [SSH Key Management](#SSH-Key-Management)
+	- [CPouta Connection Configuration](#CPouta-Connection-Configuration)
+	- [Lustre Filesystem](#Lustre-Filesystem)
+	- [Lmod Modules](#Lmod-Modules)
+	- [Python Environments](#Python-Environments)
+	- [Remote Forward](#Remote-Forward)
+	- [SLURM Basics](#SLURM-Basics)
+	- [SLURM Ray](#SLURM-Ray)
+	- [SLURM Sacct](#SLURM-Sacct)
+	- [General Monitoring](#General-Monitoring)
+- [Manual Cloud-HPC Integration](#Manual-Cloud-HPC-Integration)
 
 ## CSC Supercomputers
 
