@@ -21,5 +21,9 @@ This document contains instructions based on [tutorial part 5](https://github.co
 
 1. When you have the project page open, scroll down a bit until you see a section called "Services"
 2. Log in to cPouta and authenticate using HAKA
-3. You should be taken to an "Overview" page of all your virtual machines. Make sure from the top-left corner that you are doing this in the right project. You can confirm the correct project number from MyCSC project page.
-4. 
+3. You should be taken to an "Overview" page of all your virtual machines.
+4. Make sure from the top-left corner that you are doing this in the right project. You can confirm the correct project number from MyCSC project page. If you can't find the right project number, you may need to wait a bit longer.
+5. First we'll create an instance. Go to Compute > Instances and press "Launch Instance"
+6. Give the instance a name and a description you like, to help you identify it better. When writing the name, preferably use lower case letters and substitute spaces with "_"
+7. Go to Source and choose "Yes" to creating a new volume. Give it at least 100
+8. 
