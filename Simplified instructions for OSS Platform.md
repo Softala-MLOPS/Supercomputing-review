@@ -6,7 +6,10 @@ This document contains instructions based on [tutorial part 5](https://github.co
 
 ## Pre-installments
 
-1. Before you begin creating the project, refer to here
+1. Before you begin creating the project, you need to make sure you have the necessary pre-installments. If you have done the initial practice installation (CLI-tool from oss-mlops-platform), then you can skip this section.
+2. Otherwise refer to "Step 0: Checking all necessary pre-installments" of [this](https://github.com/OSS-MLOPS-PLATFORM/oss-mlops-platform/blob/main/tools/CLI-tool/Installations,%20setups%20and%20usage.md) document depending on whether you're using Windows or MacOS. These instructions are written based on Windows.
+3. Follow "For Windows - before Ubuntu installation" to get WSL and Docker working correctly
+4. We will get back to "For Linux - Ubuntu (and WSL)" when the virtual machine is set up in the later parts. Ignore it for now.
 
 ## Create a project in CSC
 
