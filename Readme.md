@@ -1,3 +1,9 @@
-This repository is part of MLOPS project's documentation. Consists of review files created by Tiriele and Jukalekvi.
+# Supercomputing-review
+This repository is part of MLOPS project's documentation, the repository of the original project can be found here: https://github.com/K123AsJ0k1/multi-cloud-hpc-oss-mlops-platform <br></br>
 
-The repository of the original project: https://github.com/K123AsJ0k1/multi-cloud-hpc-oss-mlops-platform
+This repository consist of four parts:
+- Reviews on the notebook files in the original repository's studying section<br></br>
+- Summaries of these notebook files for easier learning experience<br></br>
+- Converted markdown files of the notebook files for easier reading experience<br></br>
+- Installasion instructions for OSS-MLOPS-PLATFORM CLI-tool<br></br>
+- This readme file.<br></br>

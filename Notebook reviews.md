@@ -14,15 +14,6 @@ This review covers the tutorials on integrating distributed computing in MLOps. 
 # Part 1
 [Link to part 1](https://github.com/K123AsJ0k1/multi-cloud-hpc-oss-mlops-platform/blob/studying/tutorials/integration/studying/tutorial_for_integration_part_1.ipynb)
 
-## Summary
-- Defining concepts being used and the terminology behind every important concept
-- Tells the meaning behind the documentation
-- Explained why Python was chosen as the coding language
-- Explaining the use of JupyterLab
-- Explaining the use of Pydantic
-- Explaining the use of YAML
-- Docker setup
-
 ## What works
 Huang:
 - Defining concepts at the start clearly (Allas, Mycsc account etc.)
@@ -54,14 +45,6 @@ Jukka:
 
 # Part 2
 [Link to part 2](https://github.com/K123AsJ0k1/multi-cloud-hpc-oss-mlops-platform/blob/studying/tutorials/integration/studying/tutorial_for_integration_part_2.ipynb)
-
-## Summary
-- Explanation of FastAPI and how Submitter and Kubernetes Forwarder communicate through the Uvicorn server
-- Explanation of the FastApi logs, application file structure and important parts of the fastApi. Document also tells how APIRouters and their routes work
-- Docker Compose explained and how to use it
-- Redis explained and how to use it
-- Examples of using the created/stored Redis pickled data 
-
 ## What works
 Huang:
 - The structure of separating the application into smaller files, easier to pinpoint possible issues
@@ -91,13 +74,6 @@ Jukka:
 
 # Part 3
 [Link to part 3](https://github.com/K123AsJ0k1/multi-cloud-hpc-oss-mlops-platform/blob/studying/tutorials/integration/studying/tutorial_for_integration_part_3.ipynb)
-
-## Summary
-- Celery with Redis works as a message broker, automating interactions between separate containers and systems
-- Flower enables easier monitoring and debugging of Celery tasks
-- Celery Beat enables scheduling of Celery tasks
-- Explaining the use of Microservice Architectures
-
 ## What works
 Huang:
 - Good summaries on what each technology does
@@ -121,14 +97,6 @@ Jukka:
 
 # Part 4
 [Link to part 4](https://github.com/K123AsJ0k1/multi-cloud-hpc-oss-mlops-platform/blob/studying/tutorials/integration/studying/tutorial_for_integration_part_4.ipynb)
-
-## Summary
-- Apache Airflow is used as a platform to programmatically monitor workflows. We can also create and schedule the workflows with it.
-- The workflow blueprint are called DAGs and they are run similarly to kubeflow pipelines. When the workflow develops, we can modity the Submitter and Forwarder automation by modifying the DAGs.
-- TriggerDagRUnOperator is a operator that we can use to create a complex DAG that triggers smaller DAGs by defining the sub DAGs.
-- Hooks in Airflow are high-level interfaces to external platforms that remove the need to write low-level code.
-- Most of the documentation is showing the logs and code in practice that is necessary for the creation of the Airflow integration.
-
 ## What works
 Huang:
 - Lots of good information, provided there is time
@@ -152,17 +120,6 @@ Jukka:
 - How does the usage of DAG's compare to everything else? Is there a possibility to use other technology for this portion?
 # Part 5
 [Link to part 5](https://github.com/K123AsJ0k1/multi-cloud-hpc-oss-mlops-platform/blob/studying/tutorials/integration/studying/tutorial_for_integration_part_5.ipynb)
-
-## Summary
-- Configuring SSH connection for easier use
-- Setting up cPouta virtual machine
-- Setting up OSS Platform
-- Explains the use of Kubernetes in Docker and what happens during installation
-- Example of installing GPU Ray with Helm charts
-- Setting up YAML files if suitable helm chart doesn't exist
-- Examples of adding applications to OSS
-- Usage of Istio service mesh to handle outside connections, Kiali to handle network debugging and Openstack security groups to handle restricted access
-
 ## What works
 Huang:
 - Steps for installing the platform
@@ -192,11 +149,6 @@ Jukka:
 # Part 6
 
 [Link to part 6](https://github.com/K123AsJ0k1/multi-cloud-hpc-oss-mlops-platform/blob/studying/tutorials/integration/studying/tutorial_for_integration_part_6.ipynb)
-
-## Summary
-- Setting up local Ray cluster
-- Ray jobs
-
 ## What works
 
 Huang:
@@ -222,8 +174,6 @@ Jukka:
 
 [Link to part 7](https://github.com/K123AsJ0k1/multi-cloud-hpc-oss-mlops-platform/blob/studying/tutorials/integration/studying/tutorial_for_integration_part_7.ipynb)
 
-## Summary
--
 
 ## What works
 
@@ -247,34 +197,6 @@ Jukka:
 # Part 8
 
 [Link to part 8](https://github.com/K123AsJ0k1/multi-cloud-hpc-oss-mlops-platform/blob/studying/tutorials/integration/studying/tutorial_for_integration_part_8.ipynb)
-
-## Summary
-
-## What works
-
-## Suggested improvements
-
-## Questions
-
-
-# Part 9
-
-Coming soon!
-
-## Summary
-
-## What works
-
-## Suggested improvements
-
-## Questions
-
-
-# Part 10
-
-Coming soon!
-
-## Summary
 
 ## What works
 
