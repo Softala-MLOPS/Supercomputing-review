@@ -79,9 +79,39 @@ At the time of making these instructions (9.12.2025), we have unfortunately not 
 11. Now mount the volume with `sudo mount /dev/vdb /mnt/data`
 12. You can check with `lsblk` to see that the file system has been created (size changed) and the mountpoint has been set
 13. Now in order to make the volume persistent (mounts automatically after reboot), we'll first check the UUID of the volume with `sudo blkid /dev/vdb`
-14. Copy the UUID. It looks something like 'UUID="4ad9ce03-a78f-44bf-a932-3e002324da75" BLOCK_SIZE="4096" TYPE="ext4"'
+14. Copy the UUID. It looks something like `UUID="4ad9ce03-a78f-44bf-a932-3e002324da75" BLOCK_SIZE="4096" TYPE="ext4"`
 15. Add UUID to the end of the fstab-file using nano. The command is `sudo nano /etc/fstab`
 16. Save using `ctrl+x`, "y" and enter
 17. We're done!
 
-## 
+## Installing prerequisites in virtual machine
+
+1. Let's go back to the Linux part of [pre-installation](https://github.com/OSS-MLOPS-PLATFORM/oss-mlops-platform/blob/main/tools/CLI-tool/Installations,%20setups%20and%20usage.md). Follow the instructions.
+2. Install Docker using `sudo apt install docker.io` and check whether it succeeded with `docker version`
+
+## Troubleshooting
+
+There's a chance you may encounter several problems during the installation.
+
+### Some known problems considering Kind, Kustomize etc.
+
+Here's a document with some of the known problems considering [Kind, kustomize etc.](https://github.com/Softala-MLOPS/Supercomputing-review/blob/main/Installation.md) and some possible solutions
+
+### Jupyter Notebook can't be installed
+
+If installing Jupyter notebook doesn't work because of global environment issues, you can use these instead:
+
+```
+sudo apt update
+sudo apt install jupyter-notebook
+```
+
+### Docker can't find images in the installation
+
+If Docker cannot find images in the first part of the installation, you may need to use the following commands:
+
+```
+sudo usermod -aG docker $USER
+newgrp docker
+docker version
+```
