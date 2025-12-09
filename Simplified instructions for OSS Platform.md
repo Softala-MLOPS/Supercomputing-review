@@ -10,6 +10,7 @@ This document contains instructions based on [tutorial part 5](https://github.co
 - [Create cPouta virtual machine](#Create-cPouta-virtual-machine)
 - [About Volumes on virtual machine](#About-Volumes-on-virtual-machine)
 - [Installing prerequisites in virtual machine](#Installing-prerequisites-in-virtual-machine)
+- [Installing the OSS Platform][#Installing-the-OSS-Platform]
 - [Troubleshooting](#Troubleshooting)
 
 ## Notes
@@ -96,6 +97,28 @@ At the time of making these instructions (9.12.2025), we have unfortunately not 
 
 1. Let's go back to the Linux part of [pre-installation](https://github.com/OSS-MLOPS-PLATFORM/oss-mlops-platform/blob/main/tools/CLI-tool/Installations,%20setups%20and%20usage.md). Follow the instructions.
 2. Install Docker using `sudo apt install docker.io` and check whether it succeeded with `docker version`
+
+## Installing the OSS Platform
+
+1. Start with the following commands:
+
+```
+git clone https://github.com/K123AsJ0k1/multi-cloud-hpc-oss-mlops-platform.git
+cd multi-cloud-hpc-oss-mlops-platform
+git checkout studying
+./integration-setup.sh
+```
+
+2. Choose the following options:
+
+- Setup integration = y
+- Deployment option = 4
+- Install local Docker registry = y
+- Setup GPU cluster = n (y, if you have GPUs)
+- Install Ray = n
+- Install kubectl = y
+
+3. When everything is installed, check that all the pods are running with `kubectl get pods -A`. You may need to wait 10-15 min if everything goes well.
 
 ## Troubleshooting
 
