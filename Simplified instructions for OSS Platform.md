@@ -1,6 +1,6 @@
 # Simplified instructions for OSS Platform
 
-This document contains instructions based on [tutorial part 5](https://github.com/K123AsJ0k1/multi-cloud-hpc-oss-mlops-platform/blob/studying/tutorials/integration/studying/tutorial_for_integration_part_5.ipynb). The purpose is to provide an easy step-by-step guide to getting the platform working.
+This document contains instructions based on [tutorial part 5](https://github.com/K123AsJ0k1/multi-cloud-hpc-oss-mlops-platform/blob/studying/tutorials/integration/studying/tutorial_for_integration_part_5.ipynb). A slightly better formatted version can be found [here](https://github.com/Softala-MLOPS/Supercomputing-review/blob/main/Markdown%20Files/tutorial_for_integration_part_5.md). The purpose is to provide an easy step-by-step guide to getting the platform working.
 
 ## Index
 
@@ -43,19 +43,21 @@ At the time of making these instructions (9.12.2025), we have unfortunately not 
 11. Give the key pair a suitable name and choose SSH Key as the key type.
 12. Download the newly created PEM-file. It's a RSA file that you will need in order to log in to the VM using SSH.
 13. Go to your file explorer and move the PEM file to Linux (Below "This computer" and looks like a penguin) > Ubuntu > home > user. The "Ubuntu" or "user" may wary depending on what you've set as your username
-14. Next we'll create an instance. Go to Compute > Instances and press "Launch Instance"
-15. Give the instance a name and a description you like
-16. Go to Source and choose "Yes" to creating a new volume. Give it e.g 200 GB space
-17. Scroll down and choose at least Ubuntu-22.04 as an image by clicking the up arrow next to it. May work with a newer version of Ubuntu but this has not been tested as of 9.12.2025
-18. Move on to Flavor and choose standard.xxlarge VM that has 31.25 GB RAM. You will need the most powerful VM (virtual machine) you can get because the project is heavy-duty and this is the best one available on a student account.
-19. Go to Security Groups and choose the new security group you created. It doesn't matter if it's together with the default one or not.
-20. Go to Key Pair and choose the key pair that you created
-21. Launch Instance
-22. When the instance has finished loading the blue bar, press the down arrow next to the "Create Snapshot" button and choose "Associate Floating IP". Select the Floating IP you created earlier.
-23. Open your WSL terminal and write `sudo ssh -L 8080:localhost:8080 ubuntu@<floating ip> -i <the name of your PEM-file>.pem` without the "<" and ">" symbols.
-24. Enter your password for Ubuntu. May be the same as the username on default.
-25. The terminal will ask you of the authenticity of the floating IP. Choose Yes to connect.
-26. You're in!
+14. Change the permissions on the PEM-file using `chmod 400 <your_key_name>.pem`
+15. Next we'll create an instance. Go to Compute > Instances and press "Launch Instance"
+16. Give the instance a name and a description you like
+17. Go to Source and choose "Yes" to creating a new volume. Give it e.g 200 GB space
+18. Scroll down and choose at least Ubuntu-22.04 as an image by clicking the up arrow next to it. May work with a newer version of Ubuntu but this has not been tested as of 9.12.2025
+19. Move on to Flavor and choose standard.xxlarge VM that has 31.25 GB RAM. You will need the most powerful VM (virtual machine) you can get because the project is heavy-duty and this is the best one available on a student account.
+20. Go to Security Groups and choose the new security group you created. It doesn't matter if it's together with the default one or not.
+21. Go to Key Pair and choose the key pair that you created
+22. Launch Instance
+23. When the instance has finished loading the blue bar, press the down arrow next to the "Create Snapshot" button and choose "Associate Floating IP". Select the Floating IP you created earlier.
+24. Open your WSL terminal and write `sudo ssh -L 8080:localhost:8080 ubuntu@<floating ip> -i <the_name_of_your_PEM-file>.pem` without the "<" and ">" symbols.
+25. Enter your password for Ubuntu. May be the same as the username on default.
+26. The terminal will ask you of the authenticity of the floating IP. Choose Yes to connect.
+27. You're in!
+28. To make sure you have the latest version of applications etc. inside the virtual machine use `sudo apt update` and `sudo apt upgrade`
 
 ## About Volumes on virtual machine
 
@@ -81,3 +83,5 @@ At the time of making these instructions (9.12.2025), we have unfortunately not 
 15. Add UUID to the end of the fstab-file using nano. The command is `sudo nano /etc/fstab`
 16. Save using `ctrl+x`, "y" and enter
 17. We're done!
+
+## 
