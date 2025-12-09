@@ -56,3 +56,10 @@ At the time of making these instructions (9.12.2025), we have unfortunately not 
 24. Enter your password for Ubuntu. May be the same as the username on default.
 25. The terminal will ask you of the authenticity of the floating IP. Choose Yes to connect.
 26. You're in!
+
+## About Volumes on virtual machine
+
+- In the previous case, we have already created a volume when we created the VM. It will appear as "vda" when you use the command `lsblk`.
+- If the virtual machine was an electrical appliance like a digital camera or a phone, you can think of volume as the memory card
+- The volume is needed so that whatever we do inside the virtual machine will be saved. Otherwise, every time we exit the VM, we will need to start over.
+-  In case you forgot to add the volume or just need some extra space, we can manually attach a separate volume, which will appear as "vdb"
