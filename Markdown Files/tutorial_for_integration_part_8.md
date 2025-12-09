@@ -497,3 +497,1682 @@ Getting efficiency metrics is even more complicated for LUMI jobs without going 
 - [Software on LUMI](https://lumi-supercomputer.github.io/lumi-self-learning/15-software-on-lumi/)
 - [Moving AI jobs to LUMI](https://a3s.fi/mats/Moving%20AI%20jobs%20to%20LUMI.pdf)
 
+To begin, let's make connecting to Puhti, Mahti and LUMI easier by configuring .ssh/config in the following way:
+
+```
+Host puhti
+Hostname puhti.csc.fi
+User (your_csc_user)
+IdentityFile ~/.ssh/local-hpc.pem
+
+Host mahti
+Hostname mahti.csc.fi
+User (your_csc_user)
+IdentityFile ~/.ssh/local-hpc.pem
+
+Host lumi
+Hostname lumi.csc.fi
+User (your_csc_user)
+IdentityFile ~/.ssh/local-hpc.pem
+```
+
+Now, create two separate terminals for interacting with the cloud CPouta VM and HPC platforms. To begin, we first need to use information mentioned in part 6 to create headless services and virtualservices for Puhti, Mahti and LUMI ray clusters. We can use the services, virtual services and gateway hosts are templates to create HPC dashboard, client, metrics and serve forwards in ranges:
+
+   - Ray dashboards (cluster port 8265)
+       - 8125-8150
+   - Ray client (cluster port 10001)
+       - 8176-8200
+   - Ray metrics (cluster ports 8500 and 8501)
+       - 8251-8300
+   - Ray serve (cluster port 8350)
+       - 8351-8400
+
+With these details we modify deployments/ray/kubernetes/services, which we deploy with:
+
+```
+cd deployments/ray/kubernetes/services,
+kubectl apply -k services
+```
+
+Now we only need to edit deployments/networking/ray with the following hosts:
+
+- "ray.hpc.dash-1.oss"
+- "ray.hpc.serve-1.oss"
+- "ray.hpc.dash-2.oss"
+- "ray.hpc.serve-2.oss"
+- "ray.hpc.dash-3.oss"
+- "ray.hpc.serve-3.oss"
+
+We can deploy these changes with:
+
+```
+cd deployments/networking
+kubectl apply -k http
+```
+
+Finally, we now only need to update /etc/hosts with the following:
+
+```
+(vm_floating_ip) ray.hpc.dash-1.oss
+(vm_floating_ip) ray.hpc.serve-1.oss
+(vm_floating_ip) ray.hpc.dash-2.oss
+(vm_floating_ip) ray.hpc.serve-2.oss
+(vm_floating_ip) ray.hpc.dash-3.oss
+(vm_floating_ip) ray.hpc.serve-3.oss
+```
+
+We are now ready to setup and run SLURM Ray clusters, which we can start by connecting to puhti, mahti and LUMI:
+
+```
+# Connect to puhti
+ssh puhti
+
+# Connect to mahti 
+ssh mahti
+
+# Connect to LUMI
+ssh lumi
+```
+
+Check the available projects:
+
+```
+# Puhti and mahti
+csc-workspaces
+
+# LUMI
+lumi-workspaces
+```
+
+Select the suitable MyCSC project projappl folder:
+
+```
+# Puhti, Mahti and LUMI
+cd /projappl/project_(your_csc_project)
+```
+
+Check loaded modules:
+
+```
+# Puhti, mahti and LUMI
+module list
+```
+
+Load PyTorch module:
+
+```
+# Puhti and mahti
+module load pytorch/2.7
+# LUMI
+module use /appl/local/csc/modulefiles/
+module load pytorch/2.7
+```
+
+Confirm that the modules are loaded:
+
+```
+module list
+```
+
+Example puhti print:
+
+```
+Currently Loaded Modules:
+  1) gcc/11.3.0   2) intel-oneapi-mkl/2022.1.0   3) openmpi/4.1.4   4) csc-tools (S)   5) StdEnv   6) pytorch/2.7
+
+  Where:
+   S:  Module is Sticky, requires --force to unload or purge
+```
+
+Example mahti print:
+
+```
+Currently Loaded Modules:
+  1) gcc/11.2.0   2) openmpi/4.1.2   3) openblas/0.3.18-omp   4) csc-tools (S)   5) StdEnv   6) pytorch/2.7
+
+  Where:
+   S:  Module is Sticky, requires --force to unload or purge
+```
+
+Example LUMI print:
+
+```
+Currently Loaded Modules:
+  1) craype-x86-rome                        6) cce/17.0.1           11) PrgEnv-cray/8.5.0
+  2) libfabric/1.15.2.0                     7) craype/2.7.31.11     12) ModuleLabel/label (S)
+  3) craype-network-ofi                     8) cray-dsmml/0.3.0     13) lumi-tools/24.05  (S)
+  4) perftools-base/24.03.0                 9) cray-mpich/8.1.29    14) init-lumi/0.2     (S)
+  5) xpmem/2.8.2-1.0_5.1__g84a27a5.shasta  10) cray-libsci/24.03.0  15) pytorch/2.7
+
+  Where:
+   S:  Module is Sticky, requires --force to unload or purge
+```
+
+Create a venv used by run Ray and execute code:
+
+```
+python3 -m venv --system-site-packages tutorial-venv
+```
+
+We can active the enviroment:
+
+```
+source tutorial-venv/bin/activate
+```
+
+In the case of puhti and mahti it is recommended to update pip with:
+
+```
+pip install --upgrade pip
+```
+
+We can then check the available packages with:
+
+```
+pip list
+```
+
+The example list for puhti is:
+
+```
+Package                                  Version
+---------------------------------------- -------------------------------------
+absl-py                                  1.4.0
+accelerate                               1.8.1
+affine                                   2.4.0
+aiohappyeyeballs                         2.6.1
+aiohttp                                  3.12.13
+aiohttp-cors                             0.8.1
+aiosignal                                1.3.2
+airportsdata                             20250622
+alembic                                  1.16.2
+annotated-types                          0.7.0
+ansicolors                               1.1.8
+anthropic                                0.55.0
+anyio                                    4.9.0
+apex                                     0.1
+argon2-cffi                              25.1.0
+argon2-cffi-bindings                     21.2.0
+array_record                             0.7.2
+arrow                                    1.3.0
+assertpy                                 1.1
+astor                                    0.8.1
+asttokens                                3.0.0
+async-lru                                2.0.5
+attrs                                    25.3.0
+audioread                                3.0.1
+babel                                    2.17.0
+beautifulsoup4                           4.13.4
+bitsandbytes                             0.46.0
+blake3                                   1.0.5
+bleach                                   6.2.0
+blinker                                  1.9.0
+blobfile                                 3.0.0
+blosc2                                   3.5.0
+cachetools                               5.5.2
+certifi                                  2025.6.15
+cffi                                     1.17.1
+cftime                                   1.6.4.post1
+charset-normalizer                       3.4.2
+click                                    8.2.1
+click-plugins                            1.1.1.2
+cligj                                    0.7.2
+cloudpickle                              3.1.1
+cmake                                    3.31.6
+colorama                                 0.4.6
+colorful                                 0.5.6
+comm                                     0.2.2
+compressed-tensors                       0.10.1
+contourpy                                1.3.2
+cuda-bindings                            12.9.0
+cuda-python                              12.9.0
+cupy-cuda12x                             13.5.0
+cycler                                   0.12.1
+Cython                                   3.1.2
+dash                                     3.1.0
+dask                                     2025.5.1
+dask-jobqueue                            0.9.0
+databricks-sdk                           0.57.0
+datasets                                 3.6.0
+debtcollector                            3.0.0
+debugpy                                  1.8.14
+decorator                                5.2.1
+decord                                   0.6.0
+deepspeed                                0.17.1
+deepspeed-kernels                        0.0.1.dev1698255861
+defusedxml                               0.7.1
+depyf                                    0.18.0
+diffusers                                0.34.0
+dill                                     0.3.8
+diskcache                                5.6.3
+distlib                                  0.3.9
+distributed                              2025.5.1
+distro                                   1.9.0
+dm-tree                                  0.1.9
+dnspython                                2.7.0
+docker                                   7.1.0
+docstring_parser                         0.16
+einops                                   0.8.1
+email_validator                          2.2.0
+entrypoints                              0.4
+et_xmlfile                               2.0.0
+etils                                    1.12.2
+evaluate                                 0.4.4
+executing                                2.2.0
+faiss                                    1.11.0
+fastapi                                  0.115.14
+fastapi-cli                              0.0.7
+fastargs                                 1.2.0
+fastjsonschema                           2.21.1
+fastrlock                                0.8.3
+ffcv                                     1.0.2
+filelock                                 3.18.0
+flash_attn                               2.8.0.post2
+flashinfer-python                        0.2.6.post1
+Flask                                    3.1.1
+fonttools                                4.58.4
+fqdn                                     1.5.1
+frozenlist                               1.7.0
+fsspec                                   2025.3.0
+fvcore                                   0.1.5.post20221221
+gensim                                   4.3.3
+geopandas                                1.1.1
+gguf                                     0.17.1
+gitdb                                    4.0.12
+GitPython                                3.1.44
+google-api-core                          2.25.1
+google-auth                              2.40.3
+googleapis-common-protos                 1.70.0
+gpytorch                                 1.14
+graphene                                 3.4.3
+graphql-core                             3.2.6
+graphql-relay                            3.2.0
+graphviz                                 0.21
+greenlet                                 3.2.3
+grpcio                                   1.73.1
+gunicorn                                 23.0.0
+gym                                      0.26.2
+gym-notices                              0.0.8
+h11                                      0.16.0
+h5py                                     3.14.0
+hf_transfer                              0.1.9
+hf-xet                                   1.1.5
+hjson                                    3.1.0
+httpcore                                 1.0.9
+httptools                                0.6.4
+httpx                                    0.28.1
+huggingface-hub                          0.33.1
+idna                                     3.10
+imageio                                  2.37.0
+imbalanced-learn                         0.13.0
+immutabledict                            4.2.1
+importlib_metadata                       8.7.0
+importlib_resources                      6.5.2
+iniconfig                                2.1.0
+interegular                              0.3.3
+iopath                                   0.1.10
+ipykernel                                6.29.5
+ipython                                  9.3.0
+ipython-genutils                         0.2.0
+ipython_pygments_lexers                  1.1.1
+ipywidgets                               8.1.7
+iso8601                                  2.1.0
+isoduration                              20.11.0
+itsdangerous                             2.2.0
+jaxtyping                                0.3.2
+jedi                                     0.19.2
+Jinja2                                   3.1.6
+jiter                                    0.10.0
+joblib                                   1.5.1
+json5                                    0.12.0
+jsonpatch                                1.33
+jsonpointer                              3.0.0
+jsonschema                               4.24.0
+jsonschema-specifications                2025.4.1
+jupyter_client                           8.6.3
+jupyter_core                             5.8.1
+jupyter-events                           0.12.0
+jupyter-lsp                              2.2.5
+jupyter_server                           2.16.0
+jupyter-server-mathjax                   0.2.6
+jupyter_server_proxy                     4.4.0
+jupyter_server_terminals                 0.5.3
+jupyterlab                               4.4.3
+jupyterlab-dash                          0.1.0a3
+jupyterlab_git                           0.51.2
+jupyterlab_pygments                      0.3.0
+jupyterlab_server                        2.27.3
+jupyterlab_widgets                       3.0.15
+jupytext                                 1.17.2
+kagglehub                                0.3.12
+keopscore                                2.3
+keras                                    3.10.0
+keras-core                               0.1.7
+keras-cv                                 0.9.0
+keystoneauth1                            5.11.1
+kiwisolver                               1.4.8
+lark                                     1.2.2
+lazy_loader                              0.4
+librosa                                  0.11.0
+lightning                                2.5.2
+lightning-utilities                      0.14.3
+linear-operator                          0.6
+lit                                      18.1.8
+litellm                                  1.73.2
+llguidance                               0.7.30
+llvmlite                                 0.44.0
+lm-format-enforcer                       0.10.11
+lmdb                                     1.6.2
+locket                                   1.0.0
+lxml                                     6.0.0
+Mako                                     1.3.10
+Markdown                                 3.8.2
+markdown-it-py                           3.0.0
+MarkupSafe                               3.0.2
+matplotlib                               3.10.3
+matplotlib-inline                        0.1.7
+mdit-py-plugins                          0.4.2
+mdurl                                    0.1.2
+mistral_common                           1.6.3
+mistune                                  3.1.3
+ml_dtypes                                0.5.1
+mlflow                                   3.1.1
+mlflow-skinny                            3.1.1
+modelscope                               1.27.1
+mpi4py                                   4.1.0
+mpmath                                   1.3.0
+msgpack                                  1.1.1
+msgspec                                  0.19.0
+multidict                                6.5.1
+multiprocess                             0.70.16
+mysql-connector-python                   9.3.0
+namex                                    0.1.0
+narwhals                                 1.44.0
+nbclassic                                1.3.1
+nbclient                                 0.10.2
+nbconvert                                7.16.6
+nbdime                                   4.0.2
+nbformat                                 5.10.4
+ndindex                                  1.10.0
+nest-asyncio                             1.6.0
+netaddr                                  1.3.0
+netCDF4                                  1.7.2
+networkx                                 3.5
+ninja                                    1.11.1.4
+nltk                                     3.9.1
+notebook                                 7.4.3
+notebook_shim                            0.2.4
+numba                                    0.61.2
+numexpr                                  2.11.0
+numpy                                    1.26.4
+nvidia-cublas-cu12                       12.6.4.1
+nvidia-cuda-cupti-cu12                   12.6.80
+nvidia-cuda-nvrtc-cu12                   12.6.77
+nvidia-cuda-runtime-cu12                 12.6.77
+nvidia-cudnn-cu12                        9.5.1.17
+nvidia-cufft-cu12                        11.3.0.4
+nvidia-cufile-cu12                       1.11.1.6
+nvidia-curand-cu12                       10.3.7.77
+nvidia-cusolver-cu12                     11.7.1.2
+nvidia-cusparse-cu12                     12.5.4.2
+nvidia-cusparselt-cu12                   0.6.3
+nvidia-ml-py                             12.575.51
+nvidia-nccl-cu12                         2.26.2
+nvidia-nvjitlink-cu12                    12.6.85
+nvidia-nvtx-cu12                         12.6.77
+odfpy                                    1.4.1
+openai                                   1.92.2
+opencensus                               0.11.4
+opencensus-context                       0.1.3
+opencv-python                            4.11.0.86
+opencv-python-headless                   4.11.0.86
+openpyxl                                 3.1.5
+opentelemetry-api                        1.34.1
+opentelemetry-exporter-otlp              1.34.1
+opentelemetry-exporter-otlp-proto-common 1.34.1
+opentelemetry-exporter-otlp-proto-grpc   1.34.1
+opentelemetry-exporter-otlp-proto-http   1.34.1
+opentelemetry-exporter-prometheus        0.55b1
+opentelemetry-proto                      1.34.1
+opentelemetry-sdk                        1.34.1
+opentelemetry-semantic-conventions       0.55b1
+opentelemetry-semantic-conventions-ai    0.4.10
+optree                                   0.16.0
+orjson                                   3.10.18
+os-service-types                         1.7.0
+oslo.config                              9.8.0
+oslo.i18n                                6.5.1
+oslo.serialization                       5.7.0
+oslo.utils                               9.0.0
+outlines                                 0.1.11
+outlines_core                            0.1.26
+overrides                                7.7.0
+packaging                                25.0
+pandas                                   2.3.0
+pandocfilters                            1.5.1
+papermill                                2.6.0
+parso                                    0.8.4
+partd                                    1.4.2
+partial-json-parser                      0.2.1.1.post6
+pbr                                      6.1.1
+peft                                     0.15.2
+pexpect                                  4.9.0
+pillow                                   11.2.1
+pip                                      25.3
+platformdirs                             4.3.8
+plotly                                   6.2.0
+pluggy                                   1.6.0
+pooch                                    1.8.2
+portalocker                              3.2.0
+prometheus_client                        0.22.1
+prometheus-fastapi-instrumentator        7.1.0
+promise                                  2.3
+prompt_toolkit                           3.0.51
+propcache                                0.3.2
+proto-plus                               1.26.1
+protobuf                                 5.29.5
+psutil                                   7.0.0
+ptyprocess                               0.7.0
+pure_eval                                0.2.3
+py-cpuinfo                               9.0.0
+py-spy                                   0.4.0
+pyarrow                                  20.0.0
+pyasn1                                   0.6.1
+pyasn1_modules                           0.4.2
+pybind11                                 2.13.6
+pycodestyle                              2.14.0
+pycountry                                24.6.1
+pycparser                                2.22
+pycryptodomex                            3.23.0
+pydantic                                 2.11.7
+pydantic_core                            2.33.2
+pydot                                    4.0.1
+pyflakes                                 3.4.0
+pyglet                                   1.5.15
+Pygments                                 2.19.2
+pykeops                                  2.3
+pynndescent                              0.5.13
+pynvml                                   12.0.0
+pyogrio                                  0.11.0
+pyparsing                                3.2.3
+pyproj                                   3.7.1
+pyprojroot                               0.3.0
+pysqlite3                                0.5.4
+pytest                                   8.4.1
+python-dateutil                          2.9.0.post0
+python-dotenv                            1.1.1
+python-json-logger                       3.3.0
+python-keystoneclient                    5.6.0
+python-multipart                         0.0.20
+python-swiftclient                       4.8.0
+pytorch-lightning                        2.5.2
+pytorch-pfn-extras                       0.8.3
+pytz                                     2025.2
+PyYAML                                   6.0.2
+pyzmq                                    27.0.0
+rasterio                                 1.4.3
+ray                                      2.47.1
+referencing                              0.36.2
+regex                                    2024.11.6
+requests                                 2.32.4
+retrying                                 1.4.0
+rfc3339-validator                        0.1.4
+rfc3986                                  2.0.0
+rfc3986-validator                        0.1.1
+rich                                     14.0.0
+rich-toolkit                             0.14.8
+rpds-py                                  0.25.1
+rsa                                      4.9.1
+safetensors                              0.5.3
+scikit-image                             0.25.2
+scikit-learn                             1.6.1
+scipy                                    1.13.1
+seaborn                                  0.13.2
+Send2Trash                               1.8.3
+sentencepiece                            0.2.0
+sentry-sdk                               2.32.0
+setproctitle                             1.3.6
+setuptools                               79.0.1
+setuptools-scm                           8.3.1
+sgl-kernel                               0.1.9
+sglang                                   0.4.8.post1
+shapely                                  2.1.1
+shellingham                              1.5.4
+simpervisor                              1.0.0
+simple-parsing                           0.1.7
+six                                      1.17.0
+sklearn-compat                           0.1.3
+smart-open                               7.1.0
+smmap                                    5.0.2
+sniffio                                  1.3.1
+sortedcontainers                         2.4.0
+soundfile                                0.13.1
+soupsieve                                2.7
+soxr                                     0.5.0.post1
+SQLAlchemy                               2.0.41
+sqlparse                                 0.5.3
+stack-data                               0.6.3
+starlette                                0.46.2
+stevedore                                5.4.1
+sympy                                    1.14.0
+tables                                   3.10.2
+tabulate                                 0.9.0
+tblib                                    3.1.0
+tenacity                                 9.1.2
+tensorboard                              2.19.0
+tensorboard-data-server                  0.7.2
+tensorboardX                             2.6.4
+tensorflow-datasets                      4.9.9
+tensorflow-metadata                      1.14.0
+termcolor                                3.1.0
+terminado                                0.18.1
+terminaltables                           3.1.10
+threadpoolctl                            3.6.0
+tifffile                                 2025.6.11
+tiktoken                                 0.9.0
+timm                                     1.0.16
+tinycss2                                 1.4.0
+tokenizers                               0.21.2
+toml                                     0.10.2
+toolz                                    1.0.0
+torch                                    2.7.1+cu126
+torch-geometric                          2.6.1
+torch_memory_saver                       0.0.8
+torch-tb-profiler                        0.4.3
+torchao                                  0.9.0
+torchaudio                               2.7.1+cu126
+torchinfo                                1.8.0
+torchmetrics                             1.7.3
+torchvision                              0.22.1+cu126
+tornado                                  6.5.1
+tqdm                                     4.67.1
+traitlets                                5.14.3
+transformers                             4.53.1
+triton                                   3.3.1
+trl                                      0.19.0
+typer                                    0.16.0
+types-python-dateutil                    2.9.0.20250516
+typing_extensions                        4.14.0
+typing-inspection                        0.4.1
+tzdata                                   2025.2
+umap-learn                               0.5.7
+uri-template                             1.3.0
+urllib3                                  2.5.0
+uvicorn                                  0.34.3
+uvloop                                   0.21.0
+virtualenv                               20.31.2
+visdom                                   0.2.4
+vllm                                     0.9.2.dev0+gb6553be1b.d20250703.cu126
+wadler_lindig                            0.1.7
+wandb                                    0.20.1
+watchfiles                               1.1.0
+wcwidth                                  0.2.13
+webcolors                                24.11.1
+webencodings                             0.5.1
+websocket-client                         1.8.0
+websockets                               15.0.1
+Werkzeug                                 3.1.3
+wheel                                    0.45.1
+widgetsnbextension                       4.0.14
+wrapt                                    1.17.2
+xformers                                 0.0.31
+xgboost                                  3.0.2
+xgrammar                                 0.1.19
+xlwt                                     1.3.0
+xxhash                                   3.5.0
+yacs                                     0.1.8
+yarl                                     1.20.1
+zict                                     3.0.0
+zipp                                     3.23.0
+```
+
+The example print for mahti is:
+
+```
+Package                                  Version
+---------------------------------------- -------------------------------------
+absl-py                                  1.4.0
+accelerate                               1.8.1
+affine                                   2.4.0
+aiohappyeyeballs                         2.6.1
+aiohttp                                  3.12.13
+aiohttp-cors                             0.8.1
+aiosignal                                1.3.2
+airportsdata                             20250622
+alembic                                  1.16.2
+annotated-types                          0.7.0
+ansicolors                               1.1.8
+anthropic                                0.55.0
+anyio                                    4.9.0
+apex                                     0.1
+argon2-cffi                              25.1.0
+argon2-cffi-bindings                     21.2.0
+array_record                             0.7.2
+arrow                                    1.3.0
+assertpy                                 1.1
+astor                                    0.8.1
+asttokens                                3.0.0
+async-lru                                2.0.5
+attrs                                    25.3.0
+audioread                                3.0.1
+babel                                    2.17.0
+beautifulsoup4                           4.13.4
+bitsandbytes                             0.46.0
+blake3                                   1.0.5
+bleach                                   6.2.0
+blinker                                  1.9.0
+blobfile                                 3.0.0
+blosc2                                   3.5.0
+cachetools                               5.5.2
+certifi                                  2025.6.15
+cffi                                     1.17.1
+cftime                                   1.6.4.post1
+charset-normalizer                       3.4.2
+click                                    8.2.1
+click-plugins                            1.1.1.2
+cligj                                    0.7.2
+cloudpickle                              3.1.1
+cmake                                    3.31.6
+colorama                                 0.4.6
+colorful                                 0.5.6
+comm                                     0.2.2
+compressed-tensors                       0.10.1
+contourpy                                1.3.2
+cuda-bindings                            12.9.0
+cuda-python                              12.9.0
+cupy-cuda12x                             13.5.0
+cycler                                   0.12.1
+Cython                                   3.1.2
+dash                                     3.1.0
+dask                                     2025.5.1
+dask-jobqueue                            0.9.0
+databricks-sdk                           0.57.0
+datasets                                 3.6.0
+debtcollector                            3.0.0
+debugpy                                  1.8.14
+decorator                                5.2.1
+decord                                   0.6.0
+deepspeed                                0.17.1
+deepspeed-kernels                        0.0.1.dev1698255861
+defusedxml                               0.7.1
+depyf                                    0.18.0
+diffusers                                0.34.0
+dill                                     0.3.8
+diskcache                                5.6.3
+distlib                                  0.3.9
+distributed                              2025.5.1
+distro                                   1.9.0
+dm-tree                                  0.1.9
+dnspython                                2.7.0
+docker                                   7.1.0
+docstring_parser                         0.16
+einops                                   0.8.1
+email_validator                          2.2.0
+entrypoints                              0.4
+et_xmlfile                               2.0.0
+etils                                    1.12.2
+evaluate                                 0.4.4
+executing                                2.2.0
+faiss                                    1.11.0
+fastapi                                  0.115.14
+fastapi-cli                              0.0.7
+fastargs                                 1.2.0
+fastjsonschema                           2.21.1
+fastrlock                                0.8.3
+ffcv                                     1.0.2
+filelock                                 3.18.0
+flash_attn                               2.8.0.post2
+flashinfer-python                        0.2.6.post1
+Flask                                    3.1.1
+fonttools                                4.58.4
+fqdn                                     1.5.1
+frozenlist                               1.7.0
+fsspec                                   2025.3.0
+fvcore                                   0.1.5.post20221221
+gensim                                   4.3.3
+geopandas                                1.1.1
+gguf                                     0.17.1
+gitdb                                    4.0.12
+GitPython                                3.1.44
+google-api-core                          2.25.1
+google-auth                              2.40.3
+googleapis-common-protos                 1.70.0
+gpytorch                                 1.14
+graphene                                 3.4.3
+graphql-core                             3.2.6
+graphql-relay                            3.2.0
+graphviz                                 0.21
+greenlet                                 3.2.3
+grpcio                                   1.73.1
+gunicorn                                 23.0.0
+gym                                      0.26.2
+gym-notices                              0.0.8
+h11                                      0.16.0
+h5py                                     3.14.0
+hf_transfer                              0.1.9
+hf-xet                                   1.1.5
+hjson                                    3.1.0
+httpcore                                 1.0.9
+httptools                                0.6.4
+httpx                                    0.28.1
+huggingface-hub                          0.33.1
+idna                                     3.10
+imageio                                  2.37.0
+imbalanced-learn                         0.13.0
+immutabledict                            4.2.1
+importlib_metadata                       8.7.0
+importlib_resources                      6.5.2
+iniconfig                                2.1.0
+interegular                              0.3.3
+iopath                                   0.1.10
+ipykernel                                6.29.5
+ipython                                  9.3.0
+ipython-genutils                         0.2.0
+ipython_pygments_lexers                  1.1.1
+ipywidgets                               8.1.7
+iso8601                                  2.1.0
+isoduration                              20.11.0
+itsdangerous                             2.2.0
+jaxtyping                                0.3.2
+jedi                                     0.19.2
+Jinja2                                   3.1.6
+jiter                                    0.10.0
+joblib                                   1.5.1
+json5                                    0.12.0
+jsonpatch                                1.33
+jsonpointer                              3.0.0
+jsonschema                               4.24.0
+jsonschema-specifications                2025.4.1
+jupyter_client                           8.6.3
+jupyter_core                             5.8.1
+jupyter-events                           0.12.0
+jupyter-lsp                              2.2.5
+jupyter_server                           2.16.0
+jupyter-server-mathjax                   0.2.6
+jupyter_server_proxy                     4.4.0
+jupyter_server_terminals                 0.5.3
+jupyterlab                               4.4.3
+jupyterlab-dash                          0.1.0a3
+jupyterlab_git                           0.51.2
+jupyterlab_pygments                      0.3.0
+jupyterlab_server                        2.27.3
+jupyterlab_widgets                       3.0.15
+jupytext                                 1.17.2
+kagglehub                                0.3.12
+keopscore                                2.3
+keras                                    3.10.0
+keras-core                               0.1.7
+keras-cv                                 0.9.0
+keystoneauth1                            5.11.1
+kiwisolver                               1.4.8
+lark                                     1.2.2
+lazy_loader                              0.4
+librosa                                  0.11.0
+lightning                                2.5.2
+lightning-utilities                      0.14.3
+linear-operator                          0.6
+lit                                      18.1.8
+litellm                                  1.73.2
+llguidance                               0.7.30
+llvmlite                                 0.44.0
+lm-format-enforcer                       0.10.11
+lmdb                                     1.6.2
+locket                                   1.0.0
+lxml                                     6.0.0
+Mako                                     1.3.10
+Markdown                                 3.8.2
+markdown-it-py                           3.0.0
+MarkupSafe                               3.0.2
+matplotlib                               3.10.3
+matplotlib-inline                        0.1.7
+mdit-py-plugins                          0.4.2
+mdurl                                    0.1.2
+mistral_common                           1.6.3
+mistune                                  3.1.3
+ml_dtypes                                0.5.1
+mlflow                                   3.1.1
+mlflow-skinny                            3.1.1
+modelscope                               1.27.1
+mpi4py                                   4.1.0
+mpmath                                   1.3.0
+msgpack                                  1.1.1
+msgspec                                  0.19.0
+multidict                                6.5.1
+multiprocess                             0.70.16
+mysql-connector-python                   9.3.0
+namex                                    0.1.0
+narwhals                                 1.44.0
+nbclassic                                1.3.1
+nbclient                                 0.10.2
+nbconvert                                7.16.6
+nbdime                                   4.0.2
+nbformat                                 5.10.4
+ndindex                                  1.10.0
+nest-asyncio                             1.6.0
+netaddr                                  1.3.0
+netCDF4                                  1.7.2
+networkx                                 3.5
+ninja                                    1.11.1.4
+nltk                                     3.9.1
+notebook                                 7.4.3
+notebook_shim                            0.2.4
+numba                                    0.61.2
+numexpr                                  2.11.0
+numpy                                    1.26.4
+nvidia-cublas-cu12                       12.6.4.1
+nvidia-cuda-cupti-cu12                   12.6.80
+nvidia-cuda-nvrtc-cu12                   12.6.77
+nvidia-cuda-runtime-cu12                 12.6.77
+nvidia-cudnn-cu12                        9.5.1.17
+nvidia-cufft-cu12                        11.3.0.4
+nvidia-cufile-cu12                       1.11.1.6
+nvidia-curand-cu12                       10.3.7.77
+nvidia-cusolver-cu12                     11.7.1.2
+nvidia-cusparse-cu12                     12.5.4.2
+nvidia-cusparselt-cu12                   0.6.3
+nvidia-ml-py                             12.575.51
+nvidia-nccl-cu12                         2.26.2
+nvidia-nvjitlink-cu12                    12.6.85
+nvidia-nvtx-cu12                         12.6.77
+odfpy                                    1.4.1
+openai                                   1.92.2
+opencensus                               0.11.4
+opencensus-context                       0.1.3
+opencv-python                            4.11.0.86
+opencv-python-headless                   4.11.0.86
+openpyxl                                 3.1.5
+opentelemetry-api                        1.34.1
+opentelemetry-exporter-otlp              1.34.1
+opentelemetry-exporter-otlp-proto-common 1.34.1
+opentelemetry-exporter-otlp-proto-grpc   1.34.1
+opentelemetry-exporter-otlp-proto-http   1.34.1
+opentelemetry-exporter-prometheus        0.55b1
+opentelemetry-proto                      1.34.1
+opentelemetry-sdk                        1.34.1
+opentelemetry-semantic-conventions       0.55b1
+opentelemetry-semantic-conventions-ai    0.4.10
+optree                                   0.16.0
+orjson                                   3.10.18
+os-service-types                         1.7.0
+oslo.config                              9.8.0
+oslo.i18n                                6.5.1
+oslo.serialization                       5.7.0
+oslo.utils                               9.0.0
+outlines                                 0.1.11
+outlines_core                            0.1.26
+overrides                                7.7.0
+packaging                                25.0
+pandas                                   2.3.0
+pandocfilters                            1.5.1
+papermill                                2.6.0
+parso                                    0.8.4
+partd                                    1.4.2
+partial-json-parser                      0.2.1.1.post6
+pbr                                      6.1.1
+peft                                     0.15.2
+pexpect                                  4.9.0
+pillow                                   11.2.1
+pip                                      25.3
+platformdirs                             4.3.8
+plotly                                   6.2.0
+pluggy                                   1.6.0
+pooch                                    1.8.2
+portalocker                              3.2.0
+prometheus_client                        0.22.1
+prometheus-fastapi-instrumentator        7.1.0
+promise                                  2.3
+prompt_toolkit                           3.0.51
+propcache                                0.3.2
+proto-plus                               1.26.1
+protobuf                                 5.29.5
+psutil                                   7.0.0
+ptyprocess                               0.7.0
+pure_eval                                0.2.3
+py-cpuinfo                               9.0.0
+py-spy                                   0.4.0
+pyarrow                                  20.0.0
+pyasn1                                   0.6.1
+pyasn1_modules                           0.4.2
+pybind11                                 2.13.6
+pycodestyle                              2.14.0
+pycountry                                24.6.1
+pycparser                                2.22
+pycryptodomex                            3.23.0
+pydantic                                 2.11.7
+pydantic_core                            2.33.2
+pydot                                    4.0.1
+pyflakes                                 3.4.0
+pyglet                                   1.5.15
+Pygments                                 2.19.2
+pykeops                                  2.3
+pynndescent                              0.5.13
+pynvml                                   12.0.0
+pyogrio                                  0.11.0
+pyparsing                                3.2.3
+pyproj                                   3.7.1
+pyprojroot                               0.3.0
+pysqlite3                                0.5.4
+pytest                                   8.4.1
+python-dateutil                          2.9.0.post0
+python-dotenv                            1.1.1
+python-json-logger                       3.3.0
+python-keystoneclient                    5.6.0
+python-multipart                         0.0.20
+python-swiftclient                       4.8.0
+pytorch-lightning                        2.5.2
+pytorch-pfn-extras                       0.8.3
+pytz                                     2025.2
+PyYAML                                   6.0.2
+pyzmq                                    27.0.0
+rasterio                                 1.4.3
+ray                                      2.47.1
+referencing                              0.36.2
+regex                                    2024.11.6
+requests                                 2.32.4
+retrying                                 1.4.0
+rfc3339-validator                        0.1.4
+rfc3986                                  2.0.0
+rfc3986-validator                        0.1.1
+rich                                     14.0.0
+rich-toolkit                             0.14.8
+rpds-py                                  0.25.1
+rsa                                      4.9.1
+safetensors                              0.5.3
+scikit-image                             0.25.2
+scikit-learn                             1.6.1
+scipy                                    1.13.1
+seaborn                                  0.13.2
+Send2Trash                               1.8.3
+sentencepiece                            0.2.0
+sentry-sdk                               2.32.0
+setproctitle                             1.3.6
+setuptools                               79.0.1
+setuptools-scm                           8.3.1
+sgl-kernel                               0.1.9
+sglang                                   0.4.8.post1
+shapely                                  2.1.1
+shellingham                              1.5.4
+simpervisor                              1.0.0
+simple-parsing                           0.1.7
+six                                      1.17.0
+sklearn-compat                           0.1.3
+smart-open                               7.1.0
+smmap                                    5.0.2
+sniffio                                  1.3.1
+sortedcontainers                         2.4.0
+soundfile                                0.13.1
+soupsieve                                2.7
+soxr                                     0.5.0.post1
+SQLAlchemy                               2.0.41
+sqlparse                                 0.5.3
+stack-data                               0.6.3
+starlette                                0.46.2
+stevedore                                5.4.1
+sympy                                    1.14.0
+tables                                   3.10.2
+tabulate                                 0.9.0
+tblib                                    3.1.0
+tenacity                                 9.1.2
+tensorboard                              2.19.0
+tensorboard-data-server                  0.7.2
+tensorboardX                             2.6.4
+tensorflow-datasets                      4.9.9
+tensorflow-metadata                      1.14.0
+termcolor                                3.1.0
+terminado                                0.18.1
+terminaltables                           3.1.10
+threadpoolctl                            3.6.0
+tifffile                                 2025.6.11
+tiktoken                                 0.9.0
+timm                                     1.0.16
+tinycss2                                 1.4.0
+tokenizers                               0.21.2
+toml                                     0.10.2
+toolz                                    1.0.0
+torch                                    2.7.1+cu126
+torch-geometric                          2.6.1
+torch_memory_saver                       0.0.8
+torch-tb-profiler                        0.4.3
+torchao                                  0.9.0
+torchaudio                               2.7.1+cu126
+torchinfo                                1.8.0
+torchmetrics                             1.7.3
+torchvision                              0.22.1+cu126
+tornado                                  6.5.1
+tqdm                                     4.67.1
+traitlets                                5.14.3
+transformers                             4.53.1
+triton                                   3.3.1
+trl                                      0.19.0
+typer                                    0.16.0
+types-python-dateutil                    2.9.0.20250516
+typing_extensions                        4.14.0
+typing-inspection                        0.4.1
+tzdata                                   2025.2
+umap-learn                               0.5.7
+uri-template                             1.3.0
+urllib3                                  2.5.0
+uvicorn                                  0.34.3
+uvloop                                   0.21.0
+virtualenv                               20.31.2
+visdom                                   0.2.4
+vllm                                     0.9.2.dev0+gb6553be1b.d20250703.cu126
+wadler_lindig                            0.1.7
+wandb                                    0.20.1
+watchfiles                               1.1.0
+wcwidth                                  0.2.13
+webcolors                                24.11.1
+webencodings                             0.5.1
+websocket-client                         1.8.0
+websockets                               15.0.1
+Werkzeug                                 3.1.3
+wheel                                    0.45.1
+widgetsnbextension                       4.0.14
+wrapt                                    1.17.2
+xformers                                 0.0.31
+xgboost                                  3.0.2
+xgrammar                                 0.1.19
+xlwt                                     1.3.0
+xxhash                                   3.5.0
+yacs                                     0.1.8
+yarl                                     1.20.1
+zict                                     3.0.0
+zipp                                     3.23.0
+```
+
+The example print for LUMI is:
+
+```
+Package                                  Version
+---------------------------------------- -------------------------
+absl-py                                  1.4.0
+accelerate                               1.7.0
+affine                                   2.4.0
+aiohappyeyeballs                         2.6.1
+aiohttp                                  3.11.18
+aiohttp-cors                             0.8.1
+aiosignal                                1.3.2
+airportsdata                             20250224
+alembic                                  1.15.2
+amdsmi                                   24.6.3+9578815
+annotated-types                          0.7.0
+ansicolors                               1.1.8
+anyio                                    4.9.0
+apex                                     1.7.0a0
+argon2-cffi                              23.1.0
+argon2-cffi-bindings                     21.2.0
+array_record                             0.7.2
+arrow                                    1.3.0
+astor                                    0.8.1
+asttokens                                3.0.0
+async-lru                                2.0.5
+async-timeout                            5.0.1
+attrs                                    25.3.0
+audioread                                3.0.1
+autocommand                              2.2.2
+awscli                                   1.40.21
+babel                                    2.17.0
+backports.tarfile                        1.2.0
+beautifulsoup4                           4.13.4
+bitsandbytes                             0.43.3.dev0
+blake3                                   1.0.5
+bleach                                   6.2.0
+blinker                                  1.9.0
+blosc2                                   3.3.3
+boto3                                    1.38.22
+botocore                                 1.38.22
+cachetools                               5.5.2
+certifi                                  2025.4.26
+cffi                                     1.17.1
+cftime                                   1.6.4.post1
+charset-normalizer                       3.4.2
+clang                                    20.1.5
+click                                    8.1.8
+click-plugins                            1.1.1
+cligj                                    0.7.2
+cloudpickle                              3.1.1
+cmake                                    4.0.2
+colorama                                 0.4.6
+colorful                                 0.5.6
+comm                                     0.2.2
+compressed-tensors                       0.10.1
+contourpy                                1.3.2
+cycler                                   0.12.1
+Cython                                   3.1.1
+dask                                     2025.5.1
+dask-jobqueue                            0.9.0
+databricks-sdk                           0.53.0
+datasets                                 3.6.0
+debtcollector                            3.0.0
+debugpy                                  1.8.14
+decorator                                5.2.1
+deepspeed                                0.17.1+2ce55057
+defusedxml                               0.7.1
+Deprecated                               1.2.18
+depyf                                    0.18.0
+diffusers                                0.33.1
+dill                                     0.3.8
+diskcache                                5.6.3
+distlib                                  0.3.9
+distributed                              2025.5.1
+distro                                   1.9.0
+dm-tree                                  0.1.9
+dnspython                                2.7.0
+docker                                   7.1.0
+docstring_parser                         0.16
+docutils                                 0.19
+einops                                   0.8.1
+email_validator                          2.2.0
+entrypoints                              0.4
+et_xmlfile                               2.0.0
+etils                                    1.12.2
+evaluate                                 0.4.3
+executing                                2.2.0
+faiss                                    1.11.0
+fastapi                                  0.115.12
+fastapi-cli                              0.0.7
+fastjsonschema                           2.21.1
+filelock                                 3.18.0
+flash-attn                               2.7.4.post1
+Flask                                    3.1.1
+fonttools                                4.58.0
+fqdn                                     1.5.1
+frozenlist                               1.6.0
+fsspec                                   2025.3.0
+fvcore                                   0.1.5.post20221221
+gensim                                   4.3.3
+geopandas                                1.0.1
+gguf                                     0.16.3
+gitdb                                    4.0.12
+GitPython                                3.1.44
+google-api-core                          2.24.2
+google-auth                              2.40.1
+googleapis-common-protos                 1.70.0
+gpytorch                                 1.14
+graphene                                 3.4.3
+graphql-core                             3.2.6
+graphql-relay                            3.2.0
+graphviz                                 0.20.3
+greenlet                                 3.2.2
+grpcio                                   1.71.0
+gunicorn                                 23.0.0
+gym                                      0.26.2
+gym-notices                              0.0.8
+h11                                      0.16.0
+h5py                                     3.13.0
+hf_transfer                              0.1.9
+hf-xet                                   1.1.2
+hiredis                                  3.1.1
+hjson                                    3.1.0
+httpcore                                 1.0.9
+httptools                                0.6.4
+httpx                                    0.28.1
+huggingface-hub                          0.33.0
+humanize                                 4.12.3
+idna                                     3.10
+imageio                                  2.37.0
+imbalanced-learn                         0.13.0
+immutabledict                            4.2.1
+importlib_metadata                       8.0.0
+importlib_resources                      6.5.2
+inflect                                  7.3.1
+iniconfig                                2.1.0
+inquirerpy                               0.3.4
+interegular                              0.3.3
+iopath                                   0.1.10
+ipykernel                                6.29.5
+ipython                                  9.2.0
+ipython-genutils                         0.2.0
+ipython_pygments_lexers                  1.1.1
+ipywidgets                               8.1.7
+iso8601                                  2.1.0
+isoduration                              20.11.0
+itsdangerous                             2.2.0
+jaraco.collections                       5.1.0
+jaraco.context                           5.3.0
+jaraco.functools                         4.0.1
+jaraco.text                              3.12.1
+jaxtyping                                0.3.2
+jedi                                     0.19.2
+Jinja2                                   3.1.6
+jiter                                    0.10.0
+jmespath                                 1.0.1
+joblib                                   1.5.0
+json5                                    0.12.0
+jsonpatch                                1.33
+jsonpointer                              3.0.0
+jsonschema                               4.23.0
+jsonschema-specifications                2025.4.1
+jupyter_client                           8.6.3
+jupyter_core                             5.7.2
+jupyter-events                           0.12.0
+jupyter-lsp                              2.2.5
+jupyter_server                           2.16.0
+jupyter-server-mathjax                   0.2.6
+jupyter_server_terminals                 0.5.3
+jupyterlab                               4.4.2
+jupyterlab_git                           0.51.1
+jupyterlab_pygments                      0.3.0
+jupyterlab_server                        2.27.3
+jupyterlab_widgets                       3.0.15
+jupytext                                 1.17.1
+kagglehub                                0.3.12
+keopscore                                2.3
+keras                                    3.10.0
+keras-core                               0.1.7
+keras-cv                                 0.9.0
+keystoneauth1                            5.11.0
+kiwisolver                               1.4.8
+lark                                     1.2.2
+lazy_loader                              0.4
+libnacl                                  2.1.0
+librosa                                  0.11.0
+lightning                                2.5.1.post0
+lightning-utilities                      0.14.3
+linear-operator                          0.6
+lion-pytorch                             0.2.3
+lit                                      18.1.8
+llguidance                               0.7.21
+llvmlite                                 0.44.0
+lm-format-enforcer                       0.10.11
+lmdb                                     1.6.2
+locket                                   1.0.0
+lxml                                     5.4.0
+Mako                                     1.3.10
+Markdown                                 3.8
+markdown-it-py                           3.0.0
+MarkupSafe                               3.0.2
+matplotlib                               3.9.4
+matplotlib-inline                        0.1.7
+mdit-py-plugins                          0.4.2
+mdurl                                    0.1.2
+mistral_common                           1.5.5
+mistune                                  3.1.3
+ml_dtypes                                0.5.1
+mlflow                                   2.22.0
+mlflow-skinny                            2.22.0
+more-itertools                           10.3.0
+mpi4py                                   4.0.3
+mpmath                                   1.3.0
+msgpack                                  1.1.0
+msgspec                                  0.19.0
+multidict                                6.4.4
+multiprocess                             0.70.16
+mysql-connector-python                   9.3.0
+namex                                    0.0.9
+nbclassic                                1.3.1
+nbclient                                 0.10.2
+nbconvert                                7.16.6
+nbdime                                   4.0.2
+nbformat                                 5.10.4
+ndindex                                  1.9.2
+nest-asyncio                             1.6.0
+netaddr                                  1.3.0
+netCDF4                                  1.7.2
+networkx                                 3.4.2
+ninja                                    1.11.1.4
+nltk                                     3.9.1
+notebook                                 7.4.2
+notebook_shim                            0.2.4
+numba                                    0.61.2
+numexpr                                  2.10.2
+numpy                                    1.26.4
+nvidia-nccl-cu12                         2.26.5
+odfpy                                    1.4.1
+openai                                   1.79.0
+opencensus                               0.11.4
+opencensus-context                       0.1.3
+opencv-python                            4.11.0.86
+opencv-python-headless                   4.11.0.86
+openpyxl                                 3.1.5
+opentelemetry-api                        1.26.0
+opentelemetry-exporter-otlp              1.26.0
+opentelemetry-exporter-otlp-proto-common 1.26.0
+opentelemetry-exporter-otlp-proto-grpc   1.26.0
+opentelemetry-exporter-otlp-proto-http   1.26.0
+opentelemetry-proto                      1.26.0
+opentelemetry-sdk                        1.26.0
+opentelemetry-semantic-conventions       0.47b0
+opentelemetry-semantic-conventions-ai    0.4.9
+optree                                   0.15.0
+os-service-types                         1.7.0
+oslo.config                              9.8.0
+oslo.i18n                                6.5.1
+oslo.serialization                       5.7.0
+oslo.utils                               9.0.0
+outlines                                 0.1.11
+outlines_core                            0.1.26
+overrides                                7.7.0
+packaging                                24.2
+pandas                                   2.2.3
+pandocfilters                            1.5.1
+papermill                                2.6.0
+parso                                    0.8.4
+partd                                    1.4.2
+partial-json-parser                      0.2.1.1.post5
+pbr                                      6.1.1
+peft                                     0.15.2
+pexpect                                  4.9.0
+pfzy                                     0.3.4
+pillow                                   11.2.1
+pip                                      22.0.2
+platformdirs                             4.3.8
+pluggy                                   1.6.0
+pooch                                    1.8.2
+portalocker                              3.1.1
+prometheus_client                        0.22.0
+prometheus-fastapi-instrumentator        7.1.0
+promise                                  2.3
+prompt_toolkit                           3.0.51
+propcache                                0.3.1
+proto-plus                               1.26.1
+protobuf                                 4.25.7
+psutil                                   7.0.0
+ptyprocess                               0.7.0
+pure_eval                                0.2.3
+py-cpuinfo                               9.0.0
+py-spy                                   0.4.0
+pyarrow                                  19.0.1
+pyasn1                                   0.6.1
+pyasn1_modules                           0.4.2
+pybind11                                 2.13.6
+pycodestyle                              2.13.0
+pycountry                                24.6.1
+pycparser                                2.22
+pydantic                                 2.11.4
+pydantic_core                            2.33.2
+pydot                                    4.0.0
+pyflakes                                 3.3.2
+Pygments                                 2.19.1
+pykeops                                  2.3
+pynndescent                              0.5.13
+pyogrio                                  0.11.0
+PyOpenGL                                 3.1.5
+pyparsing                                3.2.3
+pyproj                                   3.7.1
+pyprojroot                               0.3.0
+pysqlite3                                0.5.4
+pytest                                   8.3.5
+pytest-asyncio                           0.26.0
+python-dateutil                          2.9.0.post0
+python-dotenv                            1.1.0
+python-json-logger                       3.3.0
+python-keystoneclient                    5.6.0
+python-multipart                         0.0.20
+python-swiftclient                       4.7.0
+pytorch-lightning                        2.5.1.post0
+pytorch-triton-rocm                      3.3.1
+pytz                                     2025.2
+PyYAML                                   6.0.2
+pyzmq                                    26.4.0
+rasterio                                 1.4.3
+ray                                      2.44.1
+redis                                    6.1.0
+referencing                              0.36.2
+regex                                    2024.11.6
+requests                                 2.32.3
+rfc3339-validator                        0.1.4
+rfc3986                                  2.0.0
+rfc3986-validator                        0.1.1
+rich                                     14.0.0
+rich-toolkit                             0.14.6
+rpds-py                                  0.25.0
+rsa                                      4.7.2
+runai-model-streamer                     0.11.0
+runai-model-streamer-s3                  0.11.0
+s3transfer                               0.13.0
+safetensors                              0.5.3
+scikit-image                             0.25.2
+scikit-learn                             1.6.1
+scipy                                    1.14.1
+seaborn                                  0.13.2
+Send2Trash                               1.8.3
+sentencepiece                            0.2.0
+setuptools                               59.6.0
+shapely                                  2.1.1
+shellingham                              1.5.4
+simple-parsing                           0.1.7
+six                                      1.17.0
+sklearn-compat                           0.1.3
+smart-open                               7.1.0
+smmap                                    5.0.2
+sniffio                                  1.3.1
+sortedcontainers                         2.4.0
+soundfile                                0.13.1
+soupsieve                                2.7
+soxr                                     0.5.0.post1
+SQLAlchemy                               2.0.41
+sqlparse                                 0.5.3
+stack-data                               0.6.3
+starlette                                0.46.2
+stevedore                                5.4.1
+sympy                                    1.14.0
+tables                                   3.10.2
+tabulate                                 0.9.0
+tblib                                    3.1.0
+tenacity                                 9.1.2
+tensorboard                              2.19.0
+tensorboard-data-server                  0.7.2
+tensorboardX                             2.6.2.2
+tensorflow-datasets                      4.9.8
+tensorflow-metadata                      1.14.0
+tensorizer                               2.9.3
+termcolor                                3.1.0
+terminado                                0.18.1
+threadpoolctl                            3.6.0
+tifffile                                 2025.5.10
+tiktoken                                 0.9.0
+timm                                     1.0.15
+tinycss2                                 1.4.0
+tokenizers                               0.21.1
+toml                                     0.10.2
+tomli                                    2.0.1
+toolz                                    1.0.0
+torch                                    2.7.1+rocm6.2.4
+torch-tb-profiler                        0.4.3
+torchaudio                               2.7.1+rocm6.2.4
+torchinfo                                1.8.0
+torchmetrics                             1.7.1
+torchvision                              0.22.1+rocm6.2.4
+tornado                                  6.5
+tqdm                                     4.67.1
+traitlets                                5.14.3
+transformers                             4.52.4
+triton                                   3.3.0
+trl                                      0.17.0
+typeguard                                4.3.0
+typer                                    0.15.4
+types-python-dateutil                    2.9.0.20250516
+typing_extensions                        4.13.2
+typing-inspection                        0.4.0
+tzdata                                   2025.2
+umap-learn                               0.5.7
+uri-template                             1.3.0
+urllib3                                  2.4.0
+uvicorn                                  0.34.2
+uvloop                                   0.21.0
+virtualenv                               20.31.2
+visdom                                   0.2.4
+vllm                                     0.9.1+rocm624
+wadler_lindig                            0.1.6
+watchfiles                               1.0.5
+wcwidth                                  0.2.13
+webcolors                                24.11.1
+webencodings                             0.5.1
+websocket-client                         1.8.0
+websockets                               15.0.1
+Werkzeug                                 3.1.3
+wheel                                    0.43.0
+widgetsnbextension                       4.0.14
+wrapt                                    1.17.2
+xformers                                 0.0.31+39addc86.d20250521
+xgboost                                  3.0.1
+xgrammar                                 0.1.19
+xlwt                                     1.3.0
+xxhash                                   3.5.0
+yacs                                     0.1.8
+yarl                                     1.20.0
+zict                                     3.0.0
+zipp                                     3.21.0
+```
+
+If you notice that there is a missing package, we can install it with:
+
+```
+pip install (package_name)
+```
+
+We can deactivate the enviroments with:
+
+```
+deactivate
+```
+
+With this we now only need to provide a SSH key, create a Ray cluster job and submit it. Move to your personal folder by checking it from workspaces:
+
+```
+# Puhti and Mahti
+csc-workspaces
+
+# LUMI
+lumi-workspaces
+```
+
+These give the following path:
+
+```
+cd /users/(your_csc_user)
+```
+
+Now, assuming that you have a ssh key for connections between cpouta and HPC, we can move the SSH key into personal directory in the following way:
+
+```
+# Local
+pwd
+cd .ssh
+cat cloud-hpc.pem
+CTRL + SHIFT + C (copy the private key)
+
+# HPC
+pwd (confirm that you are in the personal directory)
+nano cloud-hpc.pem
+CTRL + SHIFT + V
+CTRL + X
+Y
+cat cloud-hpc.pem
+chmod 600 cloud-hpc.pem
+```
+
+We now only need to create the ray SLURM job. Please check https://docs.csc.fi/computing/running/batch-job-partitions/ and https://docs.lumi-supercomputer.eu/runjobs/scheduled-jobs/partitions/ to confirm suitable paritions. The most important thing is to check if the paritions has atleast two nodes for normal head-worker cluster. For this reason the paritions are:
+
+   - Puhti -> large
+   - Mahti -> medium
+   - LUMI -> small
+
+You can find ray-cluster.sh templates at deployments/ray/slurm. When you have filled the details, copy them with:
+
+```
+# HPC 
+pwd (check that you are in the personal directory)
+nano tutorial-ray-cluster.sh
+CTRL + SHIFT + V
+CTRL + X
+Y
+cat tutorial-ray-cluster.sh
+```
+
+Before we submit it, remember that we can confirm that the dashboard connection works by local forwarding it:
+
+```
+# SSH local forward for Puhti
+ssh -L 127.0.0.1:8125:(your_VM_private_ip):8125 cpouta
+# SSH local forward for Mahti
+ssh -L 127.0.0.1:8126:(your_VM_private_ip):8126 cpouta
+# SSH local forward fpr LUMI
+ssh -L 127.0.0.1:8127:(your_VM_private_ip):8127 cpouta
+```
+
+The local forward addresses are:
+
+   - http://127.0.0.1:8125
+   - http://127.0.0.1:8126
+   - http://127.0.0.1:8127
+
+After that, we can confirm it works inside cluster with a curl pod:
+
+```
+cd deployments/networking
+kubectl apply -f curl.yaml
+kubectl get pods
+kubectl exec -it curl-pod -- /bin/sh
+
+# Puhti
+curl http://ray-hpc-1-dash.integration.svc.cluster.local:8125
+
+# Mahti
+curl http://ray-hpc-2-dash.integration.svc.cluster.local:8126
+
+# LUMI
+curl http://ray-hpc-3-dash.integration.svc.cluster.local:8127
+```
+
+To confirm it works inside VM through Istio we can use curl with:
+
+```
+# Puhti
+curl -v -H "Host: ray.hpc.dash-1.oss" http://localhost:7001
+# Mahti
+curl -v -H "Host: ray.hpc.dash-2.oss" http://localhost:7001
+# LUMI
+curl -v -H "Host: ray.hpc.dash-3.oss" http://localhost:7001
+```
+
+To confirm it works via browser, you can click the following urls:
+
+   - Puhti: http://ray.hpc.dash-1.oss:7001
+   - Mahti: http://ray.hpc.dash-2.oss:7001
+   - LUMI: http://ray.hpc.dash-3.oss:7001
+
+Assuming that everything works, submit the job
+
+```
+sbatch tutorial-ray-cluster.sh
+```
+
+You can check that it runs with:
+
+```
+squeue --me
+```
+
+When the job has run around 60 seconds, we should see the dasbhoards with local, curl and browser with the mentioned methods. After confirming access via browser, cancel the job with:
+
+```
+scancel (job_id)
+```
+
+We can check the created logs with:
+
+```
+cat slurm-(job_id).out
+```
+
+In puhti and mahti, we can check the spent billing units with:
+
+```
+seff (job_id)
+```
+
+In all of them we can get job metrics using the follwing command:
+
+```
+sacct -j (job_id)
+```
+
+We can get specific fields with:
+
+```
+sacct -o jobid,jobname,account,partition,timelimit,submit,start -j (job_id)
+```
+
+If we assume that we do file transfers through SSH, we now know all the manual actions we need to consider in HPC interaction automation.
