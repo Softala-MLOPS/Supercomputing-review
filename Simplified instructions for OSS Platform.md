@@ -17,7 +17,7 @@ This document contains instructions based on [tutorial part 5](https://github.co
 
 1. At the time of making these instructions (9.12.2025), we have unfortunately not found an effective way to fix any mistakes done while creating the virtual machine. This means that if you get any of the steps wrong, you may need to delete everything and start over. Even if you try to manually delete something specific and install it again, the system may recognize the leftover files and refuse to proceed as intended. I know, it sucks.
 
-2. The instructions written here should be tested and working at least till the part concerning [Installing prerequisites in virtual machine](#Installing-prerequisites-in-virtual-machine). The parts after that are still incomplete and may need improvement.
+2. The instructions written here should be tested and working at least till the part concerning [About Volumes on virtual machine](#About-Volumes-on-virtual-machine). The parts after that are still incomplete and may need improvement.
 
 ## Pre-installments
 
