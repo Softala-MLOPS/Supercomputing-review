@@ -10,7 +10,7 @@ This document contains instructions based on [tutorial part 5](https://github.co
 - [Create cPouta virtual machine](#Create-cPouta-virtual-machine)
 - [About Volumes on virtual machine](#About-Volumes-on-virtual-machine)
 - [Installing prerequisites in virtual machine](#Installing-prerequisites-in-virtual-machine)
-- [Installing the OSS Platform][#Installing-the-OSS-Platform]
+- [Installing the OSS Platform](#Installing-the-OSS-Platform)
 - [Troubleshooting](#Troubleshooting)
 
 ## Notes
