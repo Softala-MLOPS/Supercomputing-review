@@ -52,7 +52,7 @@ At the time of making these instructions (9.12.2025), we have unfortunately not 
 20. Go to Key Pair and choose the key pair that you created
 21. Launch Instance
 22. When the instance has finished loading the blue bar, press the down arrow next to the "Create Snapshot" button and choose "Associate Floating IP". Select the Floating IP you created earlier.
-23. Open your WSL terminal and write "sudo ssh -L 8080:localhost:8080 ubuntu@<floating ip> -i <the name of your PEM-file>.pem
+23. Open your WSL terminal and write `sudo ssh -L 8080:localhost:8080 ubuntu@<floating ip> -i <the name of your PEM-file>.pem` without the "<" and ">" symbols.
 24. Enter your password for Ubuntu. May be the same as the username on default.
 25. The terminal will ask you of the authenticity of the floating IP. Choose Yes to connect.
 26. You're in!
