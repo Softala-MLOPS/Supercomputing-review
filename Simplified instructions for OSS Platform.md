@@ -4,6 +4,10 @@ This document contains instructions based on [tutorial part 5](https://github.co
 
 ## Index
 
+## Notes
+
+At the time of making these instructions (9.12.2025), we have unfortunately not found an effective way to fix any mistakes done while creating the virtual machine. This means that if you get any of the steps wrong, you may need to delete everything and start over. Even if you try to manually delete something specific and install it again, the system may recognize the leftover files and refuse to proceed as intended. I know, it sucks.
+
 ## Pre-installments
 
 1. Before you begin creating the project, you need to make sure you have the necessary pre-installments. If you have done the initial practice installation (CLI-tool from oss-mlops-platform), then you can skip this section.
@@ -48,4 +52,7 @@ This document contains instructions based on [tutorial part 5](https://github.co
 20. Go to Key Pair and choose the key pair that you created
 21. Launch Instance
 22. When the instance has finished loading the blue bar, press the down arrow next to the "Create Snapshot" button and choose "Associate Floating IP". Select the Floating IP you created earlier.
-23. 
+23. Open your WSL terminal and write "sudo ssh -L 8080:localhost:8080 ubuntu@<floating ip> -i <the name of your PEM-file>.pem
+24. Enter your password for Ubuntu. May be the same as the username on default.
+25. The terminal will ask you of the authenticity of the floating IP. Choose Yes to connect.
+26. You're in!
