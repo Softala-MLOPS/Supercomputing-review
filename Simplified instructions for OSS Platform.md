@@ -29,18 +29,23 @@ This document contains instructions based on [tutorial part 5](https://github.co
 1. When you have the project page open, scroll down a bit until you see a section called "Services"
 2. Log in to cPouta and authenticate using HAKA
 3. You should be taken to an "Overview" page of all your virtual machines.
-4. Make sure from the top-left corner that you are doing this in the right project. You can confirm the correct project number from MyCSC project page. If you can't find the right project number, you may need to wait a bit longer.
+4. Make sure from the top-left corner that you are doing this in the right project. You can confirm the correct project number from MyCSC project page. If you can't find the right project number, you may need to wait a bit longer to be granted access.
 5. First we'll adjust security groups in order to make SSH connection work. We'll need this to get access to the VM (virtual machine). Go to Network > Security Groups and create a new Security Group.
-6. Give it a name and description you like, to help you identify it better. When writing the name, preferably use lower case letters and substitute spaces with "_"
+6. Give it a name and description you like, to help you identify it better. When writing the name, preferably use lower case letters and substitute spaces with "_" or "-".
 7. You will be moved to the Group Rules. Next press "Add rule"
 8. In the "Rule" box, it most likely says "Custom TCP Rule". Change that to SSH and add as it is. You should get the port range 22.
 9. Go to Network > Floating IPs and press "Allocate IP to Project". Give it a suitable description for easier recognition.
 10. Now we'll create a key pair, which we'll use to log in. Go to Compute > Key Pairs and create a new one.
 11. Give the key pair a suitable name and choose SSH Key as the key type.
 12. Download the newly created PEM-file. It's a RSA file that you will need in order to log in to the VM using SSH.
-13. Next we'll create an instance. Go to Compute > Instances and press "Launch Instance"
-14. Give the instance a name and a description you like
-15. Go to Source and choose "Yes" to creating a new volume. Give it e.g 200 GB space
-16. Scroll down and choose at least Ubuntu-22.04 as an image by clicking the up arrow next to it. May work with a newer version of Ubuntu but this has not been tested as of 9.12.2025
-17. Move on to Flavor and choose standard.xxlarge VM that has 31.25 GB RAM. You will need the most powerful VM (virtual machine) you can get because the project is heavy-duty and this is the best one available on a student account.
-18. 
+13. Go to your file explorer and move the PEM file to Linux (Below "This computer" and looks like a penguin) > Ubuntu > home > user. The "Ubuntu" or "user" may wary depending on what you've set as your username
+14. Next we'll create an instance. Go to Compute > Instances and press "Launch Instance"
+15. Give the instance a name and a description you like
+16. Go to Source and choose "Yes" to creating a new volume. Give it e.g 200 GB space
+17. Scroll down and choose at least Ubuntu-22.04 as an image by clicking the up arrow next to it. May work with a newer version of Ubuntu but this has not been tested as of 9.12.2025
+18. Move on to Flavor and choose standard.xxlarge VM that has 31.25 GB RAM. You will need the most powerful VM (virtual machine) you can get because the project is heavy-duty and this is the best one available on a student account.
+19. Go to Security Groups and choose the new security group you created. It doesn't matter if it's together with the default one or not.
+20. Go to Key Pair and choose the key pair that you created
+21. Launch Instance
+22. When the instance has finished loading the blue bar, press the down arrow next to the "Create Snapshot" button and choose "Associate Floating IP". Select the Floating IP you created earlier.
+23. 
