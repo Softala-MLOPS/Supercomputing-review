@@ -62,4 +62,22 @@ At the time of making these instructions (9.12.2025), we have unfortunately not 
 - In the previous case, we have already created a volume when we created the VM. It will appear as "vda" when you use the command `lsblk`.
 - If the virtual machine was an electrical appliance like a digital camera or a phone, you can think of volume as the memory card
 - The volume is needed so that whatever we do inside the virtual machine will be saved. Otherwise, every time we exit the VM, we will need to start over.
--  In case you forgot to add the volume or just need some extra space, we can manually attach a separate volume, which will appear as "vdb"
+-  In case you forgot to add the volume or just need some extra space, we can manually attach a separate volume, which will appear as "vdb", "vdc" and so on. In this case, we will also need to format, mount and add to fstab-file because new volumes on default do not have a file system on default. Here's how to do it:
+
+1. In the cPouta Dashboard, go to Volumes > Volumes and create a new one
+2. Give it a suitable name and description
+3. In Volume Source, choose Image
+4. In "Use image as a source", choose "Ubuntu-22.04 (2.2 GB)"
+5. Give it a size you want
+6. Create it
+7. Go back to Compute > Instances, press the down arrow next to "Create Snapshot" and choose "Attach Volume"
+8. Check with `lsblk` that the volume exists as vdb. Notice that it has nothing on mountpoint.
+9. To create a file system, we need to format it using the command `sudo mkfs.ext4 /dev/vdb`. Choose Yes when asked about gpt partition table.
+10. Next create the directory to which the volume will be attached to by using the command `sudo mkdir /mnt/data`
+11. Now mount the volume with `sudo mount /dev/vdb /mnt/data`
+12. You can check with `lsblk` to see that the file system has been created (size changed) and the mountpoint has been set
+13. Now in order to make the volume persistent (mounts automatically after reboot), we'll first check the UUID of the volume with `sudo blkid /dev/vdb`
+14. Copy the UUID. It looks something like 'UUID="4ad9ce03-a78f-44bf-a932-3e002324da75" BLOCK_SIZE="4096" TYPE="ext4"'
+15. Add UUID to the end of the fstab-file using nano. The command is `sudo nano /etc/fstab`
+16. Save using `ctrl+x`, "y" and enter
+17. We're done!
