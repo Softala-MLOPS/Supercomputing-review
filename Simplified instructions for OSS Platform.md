@@ -56,7 +56,7 @@ At the time of making these instructions (9.12.2025), we have unfortunately not 
 16. Give the instance a name and a description you like
 17. Go to Source and choose "Yes" to creating a new volume. Give it e.g 200 GB space
 18. Scroll down and choose at least Ubuntu-22.04 as an image by clicking the up arrow next to it. May work with a newer version of Ubuntu but this has not been tested as of 9.12.2025
-19. Move on to Flavor and choose standard.xxlarge VM that has 31.25 GB RAM. You will need the most powerful VM (virtual machine) you can get because the project is heavy-duty and this is the best one available on a student account.
+19. Move on to Flavor and choose standard.xxlarge VM that has 31.25 GB RAM. You will need the most powerful VM you can get because the project is heavy-duty and this is the best one available on a student account.
 20. Go to Security Groups and choose the new security group you created. It doesn't matter if it's together with the default one or not.
 21. Go to Key Pair and choose the key pair that you created
 22. Launch Instance
@@ -72,7 +72,7 @@ At the time of making these instructions (9.12.2025), we have unfortunately not 
 - In the previous case, we have already created a volume when we created the VM. It will appear as "vda" when you use the command `lsblk`.
 - If the virtual machine was an electrical appliance like a digital camera or a phone, you can think of volume as the memory card
 - The volume is needed so that whatever we do inside the virtual machine will be saved. Otherwise, every time we exit the VM, we will need to start over.
--  In case you forgot to add the volume or just need some extra space, we can manually attach a separate volume, which will appear as "vdb", "vdc" and so on. In this case, we will also need to format, mount and add to fstab-file because new volumes on default do not have a file system on default. Here's how to do it:
+-  In case you forgot to add the volume or just need some extra space, we can manually attach a separate volume, which will appear as "vdb", "vdc" and so on. In this case, we will also need to format, mount and add to fstab-file because new volumes do not have a file system on default. Here's how to do it:
 
 1. In the cPouta Dashboard, go to Volumes > Volumes and create a new one
 2. Give it a suitable name and description
