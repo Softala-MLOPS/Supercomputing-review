@@ -5,6 +5,8 @@ This jupyter notebook goes through the basic ideas with practical examples for i
 ## Index
 
 - [CSC Supercomputers](#CSC-Supercomputers)
+- [Account use](#Account Use)
+- [SSH Key Management](#SSH-Key-Management)
 - 
 
 ## CSC Supercomputers
