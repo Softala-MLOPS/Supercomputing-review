@@ -15,29 +15,29 @@ This document contains instructions based on [tutorial part 5](https://github.co
 
 ## Notes
 
-1. At the time of making these instructions (9.12.2025), we have unfortunately not found an effective way to fix any mistakes done while creating the virtual machine. This means that if you get any of the steps wrong, you may need to delete everything and start over. Even if you try to manually delete something specific and install it again, the system may recognize the leftover files and refuse to proceed as intended. I know, it sucks.
+1. At the time of making these instructions (10.12.2025), we have unfortunately not found an effective way to fix any mistakes done while creating the virtual machine. This means that if you get any of the steps wrong, you may need to delete everything and start over. Even if you try to manually delete something specific and install it again, the system may recognize the leftover files and refuse to proceed as intended. I know, it sucks.
 
-2. The instructions written here should be tested and working at least till the part concerning [About Volumes on virtual machine](#About-Volumes-on-virtual-machine). The parts after that are still incomplete and may need improvement.
+2. The instructions written here should be tested and working at least till the part concerning [Installing prerequisites in virtual machine](#Installing-prerequisites-in-virtual-machine). The parts after that are still incomplete and may need improvement.
 
 ## Pre-installments
 
 1. Before you begin creating the project, you need to make sure you have the necessary pre-installments. If you have done the initial practice installation (CLI-tool from oss-mlops-platform), then you can skip this section.
-2. Otherwise refer to "Step 0: Checking all necessary pre-installments" of [this](https://github.com/OSS-MLOPS-PLATFORM/oss-mlops-platform/blob/main/tools/CLI-tool/Installations,%20setups%20and%20usage.md) document depending on whether you're using Windows or MacOS. These instructions are written based on Windows.
-3. Follow "For Windows - before Ubuntu installation" to get WSL and Docker working correctly
-4. We will get back to "For Linux - Ubuntu (and WSL)" when the virtual machine is set up in the later parts. Ignore it for now.
+2. Otherwise refer to `Step 0: Checking all necessary pre-installments` of [this](https://github.com/OSS-MLOPS-PLATFORM/oss-mlops-platform/blob/main/tools/CLI-tool/Installations,%20setups%20and%20usage.md) document depending on whether you're using Windows or MacOS. These instructions are written based on Windows.
+3. Follow `For Windows - before Ubuntu installation` to get WSL and Docker working correctly
+4. We will get back to `For Linux - Ubuntu (and WSL)` when the virtual machine is set up in the later parts. Ignore it for now.
 
 ## Create a project in CSC
 
 1. First you will need to log into your CSC account using HAKA. You can access the page from [here](https://my.csc.fi/welcome).
-2. Go to your "Projects" and create a new one. Alternatively have the course teacher invite you as a collaborator to the project (e.g OSS MLOps and LLMOps for EuroHPC - non-LUMI part). If you're doing the latter, you can skip the rest of the steps in this section.
+2. Go to your `Projects` and create a new one. Alternatively have the course teacher invite you as a collaborator to the project (e.g OSS MLOps and LLMOps for EuroHPC - non-LUMI part). If you're doing the latter, you can skip the rest of the steps in this section.
 3. Name your project and give it a description you like. It's best to name it so that it's easy to recognize for you.
-4. Pick "Natural Sciences" as the primary field of science and "Computer and information sciences" as secondary field of science
+4. Pick `Natural Sciences` as the primary field of science and `Computer and information sciences` as secondary field of science
 5. Choose end date (At least till the end of the course).
 6. Choose at least cPouta when picking services. Allas and Puhti may be needed later but they can be chosen when required from the project page once it has been created.
 7. The page will show you granted resources, proceed to the next phase.
 8. Accept the Terms of Use. Check everything needed.
 9. It will take approx. 30 min for CSC to grant you permission to use services like cPouta. You should get a confirmation in your registered email when it's done.
-11. Meanwhile you should go to your "Projects", click on the project you just created and add your team members in the "Members" section.
+11. Meanwhile you should go to your `Projects`, click on the project you just created and add your team members in the `Members` section.
 
 ## Create cPouta virtual machine
 
