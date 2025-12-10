@@ -1,4 +1,4 @@
-# Simplified instructions for OSS Platform
+# Simplified instructions for OSS Platform (updated on 10.12.2025)
 
 This document contains instructions based on [tutorial part 5](https://github.com/K123AsJ0k1/multi-cloud-hpc-oss-mlops-platform/blob/studying/tutorials/integration/studying/tutorial_for_integration_part_5.ipynb). A slightly better formatted version can be found [here](https://github.com/Softala-MLOPS/Supercomputing-review/blob/main/Markdown%20Files/tutorial_for_integration_part_5.md). The purpose is to provide an easy step-by-step guide to getting the platform working.
 
