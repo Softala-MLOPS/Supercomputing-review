@@ -129,8 +129,6 @@ sudo mv kustomize /usr/local/bin/
 rm kustomize.tar.gz
 ```
 
-6. 
-
 ## Installing the OSS Platform
 
 1. Start with the following commands:
