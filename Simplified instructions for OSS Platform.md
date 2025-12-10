@@ -99,6 +99,37 @@ This document contains instructions based on [tutorial part 5](https://github.co
 
 1. Let's go back to the Linux part of [pre-installation](https://github.com/OSS-MLOPS-PLATFORM/oss-mlops-platform/blob/main/tools/CLI-tool/Installations,%20setups%20and%20usage.md). Follow the instructions.
 2. Install Docker using `sudo apt install docker.io` and check whether it succeeded with `docker version`
+3. Change Docker permissions using:
+
+```
+sudo usermod -aG docker ubuntu
+sudo reboot
+```
+
+4. Install Kind using:
+
+```
+curl -Lo ./kind https://kind.sigs.k8s.io/dl/latest/kind-linux-amd64
+chmod +x ./kind
+sudo mv ./kind /usr/local/bin/kind
+```
+
+5. Install Kustomize using:
+
+```
+cd ~
+curl -s https://api.github.com/repos/kubernetes-sigs/kustomize/releases/latest \
+| grep browser_download_url \
+| grep linux_amd64.tar.gz \
+| cut -d '"' -f 4 \
+| xargs curl -Lo kustomize.tar.gz
+
+tar -xzf kustomize.tar.gz
+sudo mv kustomize /usr/local/bin/
+rm kustomize.tar.gz
+```
+
+6. 
 
 ## Installing the OSS Platform
 
