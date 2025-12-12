@@ -1,26 +1,26 @@
-# Part 5 setup Installation problems
-# Kind / Kubeflow Ympäristön Asennusdokumentaatio
+# Part 5 Setup Installation Problems
+# Kind / Kubeflow Environment Installation Documentation
 
-## Ympäristön kuvaus
+## Environment Description
 
-* Käyttöjärjestelmä: Ubuntu (pilvi-VM: "ubuntu@oss-platform")
-* Työkalut: Docker, kind, kubectl, Kubeflow integration setup script
-* Tarkoitus: pystyttää kind-klusteri ja ajaa `integration-setup.sh` Kubeflow/KFP-asennusta varten
+* Operating System: Ubuntu (cloud VM: "ubuntu@oss-platform")
+* Tools: Docker, kind, kubectl, Kubeflow integration setup script
+* Purpose: Set up a kind cluster and run `integration-setup.sh` for Kubeflow/KFP installation
 
 ---
 
-## 1. Kind-komento ei toiminut
+## 1. Kind Command Not Working
 
-**Virheilmoitus:**
+**Error Message:**
 
 ```
 kind: command not found
 ```
 
-**Syy:**
-Kind ei ollut asennettuna tai PATH-muuttujassa.
+**Cause:**
+Kind was not installed or not in the PATH variable.
 
-**Ratkaisu:**
+**Solution:**
 
 ```bash
 curl -Lo ./kind https://kind.sigs.k8s.io/dl/latest/kind-linux-amd64
@@ -28,71 +28,71 @@ chmod +x ./kind
 sudo mv ./kind /usr/local/bin/kind
 ```
 
-**Tulos:** `kind version` toimii
+**Result:** `kind version` works
 
 ---
 
-## 2. Docker-permission denied -virhe
+## 2. Docker Permission Denied Error
 
-**Virheilmoitus:**
+**Error Message:**
 
 ```
 permission denied while trying to connect to the Docker daemon socket at unix:///var/run/docker.sock
 ```
 
-**Syy:** Käyttäjä `ubuntu` ei kuulunut `docker`-ryhmään.
+**Cause:** User `ubuntu` was not part of the `docker` group.
 
-**Ratkaisu:**
+**Solution:**
 
 ```bash
 sudo usermod -aG docker ubuntu
 sudo reboot
 ```
 
-**Varmistus:**
+**Verification:**
 
 ```bash
-groups  # pitäisi sisältää 'docker'
-docker ps  # toimii ilman sudo
+groups  # should contain 'docker'
+docker ps  # works without sudo
 ```
 
 ---
 
-## 3. Fstab-virhe – NFS usage parsing
+## 3. Fstab Error – NFS Usage Parsing
 
-**Virheilmoitus:**
+**Error Message:**
 
 ```
 cannot parse /etc/fstab: expected at least 3 fields, found 1
 ```
 
-**Syy:** `/etc/fstab` tiedoston viimeinen rivi oli virheellinen.
+**Cause:** The last line in the `/etc/fstab` file was invalid.
 
-**Korjaus:** Kommentoi rivin alkuun `#` tai poista se
+**Fix:** Comment out the beginning of the line with `#` or remove it
 
 ```bash
 # UUID="046ec14e-b98f-499f-865b-7cb5ebc872bf"
 ```
 
-**Varmistus:**
+**Verification:**
 
 ```bash
-sudo mount -a  # ei virheilmoitusta
+sudo mount -a  # no error message
 ```
 
 ---
 
-## 4. Kustomize not found
+## 4. Kustomize Not Found
 
-**Virheilmoitus:**
+**Error Message:**
 
 ```
 ./integration-setup.sh: line 241: kustomize: command not found
 ```
 
-**Syy:** Kustomize ei ole asennettuna eikä PATHissa.
+**Cause:** Kustomize is not installed and not in PATH.
 
-**Ratkaisu:**
+**Solution:**
 
 ```bash
 cd ~
@@ -107,7 +107,7 @@ sudo mv kustomize /usr/local/bin/
 rm kustomize.tar.gz
 ```
 
-**Varmistus:**
+**Verification:**
 
 ```bash
 kustomize version
@@ -115,26 +115,26 @@ kustomize version
 
 ---
 
-## Yhteenveto
+## Summary
 
-| Vaihe | Virheilmoitus / Ongelma                  | Syy                         | Ratkaisu                                 |
-| ----- | ---------------------------------------- | --------------------------- | ---------------------------------------- |
-| 1     | `kind: command not found`                | Kind ei asennettu           | Asenna kind ja lisää PATHiin             |
-| 2     | `permission denied /var/run/docker.sock` | Käyttäjä ei docker-ryhmässä | `sudo usermod -aG docker $USER` + reboot |
-| 3     | `cannot parse /etc/fstab`                | Virheellinen rivi fstabissa | Kommentoi ylimääräinen UUID-rivi         |
-| 4     | `kustomize: command not found`           | Kustomize ei asennettu      | Lataa ja asenna manuaalisesti            |
+| Step | Error Message / Problem                  | Cause                              | Solution                                 |
+| ---- | ---------------------------------------- | ---------------------------------- | ---------------------------------------- |
+| 1    | `kind: command not found`                | Kind not installed                 | Install kind and add to PATH             |
+| 2    | `permission denied /var/run/docker.sock` | User not in docker group           | `sudo usermod -aG docker $USER` + reboot |
+| 3    | `cannot parse /etc/fstab`                | Invalid line in fstab              | Comment out extra UUID line              |
+| 4    | `kustomize: command not found`           | Kustomize not installed            | Download and install manually            |
 
-**Lopputulos:**
+**Final Result:**
 
-* Docker toimii ilman sudoa
-* kind-klusteri pystyssä
-* fstab-virhe korjattu
-* kustomize asennettu ja PATHissa
-* `integration-setup.sh` voi jatkaa Kubeflow / KFP + KServe -ympäristön asennusta
+* Docker works without sudo
+* kind cluster is up
+* fstab error fixed
+* kustomize installed and in PATH
+* `integration-setup.sh` can continue with Kubeflow / KFP + KServe environment installation
 
 ---
 
-## Suositellut tarkistuskomennot
+## Recommended Verification Commands
 
 ```bash
 docker ps
