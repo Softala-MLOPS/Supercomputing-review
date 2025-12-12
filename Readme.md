@@ -25,6 +25,7 @@ The point we managed to get to was following:
 
 Next steps and tips for the next group:
 - Create the installation and try to go further than we were able, next step for us would have been the installation of Ray
+- Continue this documentation when the next parts are released. If you have any ideas how to make this repository better, feel free to change things up around here
 - Read and try to understand the documentation as best as possible
 - Take your time getting familiar with the technologies. There are many things to learn and understand
 - Keep close contact to the creator of the original repository and the notebook files
