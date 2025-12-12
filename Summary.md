@@ -1,6 +1,6 @@
 # Summary
 This document contains summaries written by Jukaleki and Tiriele in in the autumn semester of 2025. Summaries are based on the notebook files created in the original repository's studying section. The original directory with the notebook files can be found [here](https://github.com/K123AsJ0k1/multi-cloud-hpc-oss-mlops-platform/tree/studying/tutorials/integration/studying).<br></br>
-This summary is created to give a quick overview of what each part of the tutorial contains.<br></br>
+This summary is created to give a quick overview of what each part of the tutorial contains. During our studies we had time to create summaries for the 5 first parts of the documentation<br></br>
 
 - [Move to part 1](#part-1)
 - [Move to part 2](#part-2)
