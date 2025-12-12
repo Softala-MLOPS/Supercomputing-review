@@ -1,4 +1,5 @@
 # Part 5 Setup Installation Problems
+This installation file is for the creator of the original repository as part of the review because the steps documented here were missing from the original installation. The step-by-step installation in this repository ([linked here](https://github.com/Softala-MLOPS/Supercomputing-review/blob/main/Simplified%20instructions%20for%20OSS%20Platform.md)) contains all of the parts mentioned here
 # Kind / Kubeflow Environment Installation Documentation
 
 ## Environment Description
